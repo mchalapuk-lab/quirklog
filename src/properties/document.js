@@ -11,3 +11,7 @@ module.exports = [
   'title',
 ];
 
+/*
+  eslint-env node
+ */
+

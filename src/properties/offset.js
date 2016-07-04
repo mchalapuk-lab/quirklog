@@ -7,3 +7,7 @@ module.exports = [
   'offsetHeight',
 ];
 
+/*
+  eslint-env node
+ */
+

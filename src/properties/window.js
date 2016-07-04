@@ -11,3 +11,7 @@ module.exports = [
   'scrollY',
 ];
 
+/*
+  eslint-env node
+ */
+

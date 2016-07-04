@@ -5,3 +5,7 @@ module.export = [
   'blur',
 ];
 
+/*
+  eslint-env node
+ */
+
