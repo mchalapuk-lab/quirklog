@@ -1,0 +1,42 @@
+{
+  "name": "browser-event-log",
+  "version": "0.1.0",
+  "description": "Configurable event and property change logger for web browser.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/webfront-toolkit/dom-event-logger.git"
+  },
+  "keywords": [
+    "dom",
+    "event",
+    "log",
+    "logger",
+    "property",
+    "browser",
+    "debug"
+  ],
+  "author": "Maciej Chałapuk",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/webfront-toolkit/dom-event-logger/issues"
+  },
+  "homepage": "https://github.com/webfront-toolkit/dom-event-logger#readme",
+  "devDependencies": {
+    "browserify": "^13.0.1",
+    "del": "^2.2.1",
+    "fixme": "^0.4.0",
+    "gulp": "^3.9.1",
+    "gulp-connect": "^4.1.0",
+    "gulp-eslint": "^3.0.0",
+    "gulp-jasmine": "^2.4.0",
+    "gulp-sass": "^2.3.2",
+    "gulp-stylelint": "^2.0.2",
+    "gulp-util": "^3.0.7",
+    "underscore": "^1.8.3",
+    "vinyl-source-stream": "^1.1.0"
+  }
+}
