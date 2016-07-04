@@ -11,6 +11,8 @@ var eslint = require('gulp-eslint');
 var connect = require('gulp-connect');
 var fixme = require('fixme');
 var del = require('del');
+var child = require('child_process');
+var yargs = require('yargs');
 var _ = require('underscore');
 
 var config = require('./build.config');
@@ -76,7 +78,6 @@ gulp.task('fixme', _.partial(fixme, {
 }));
 
 gulp.task('watch', [ 'default' ], function() {
-  gulp.watch(config.files.config, [ 'lint:config' ]);
   gulp.watch(config.files.html, [ 'html' ]);
   gulp.watch(config.files.css, [ 'sass' ]);
   gulp.watch(config.files.js, [ 'javascript', 'spec' ]);
@@ -87,6 +88,22 @@ gulp.task('watch', [ 'default' ], function() {
     port: 8889,
     livereload: false,
   });
+});
+
+gulp.task('autoreload', function() {
+  var actualGulp = null;
+
+  gulp.watch(config.files.config, function() {
+    gulp.start('lint:config');
+    actualGulp.kill();
+    spawnAnotherChild();
+  });
+
+  function spawnAnotherChild() {
+    actualGulp = child.spawn('gulp', [ yargs.argv.task ], { stdio: 'inherit' });
+  }
+
+  spawnAnotherChild();
 });
 
 /*

@@ -10,8 +10,7 @@ var files = {
     'setup.sh',
   ],
   config: [
-    '.writ.config.js',
-    '.writ.gulpfile.js',
+    'build.config.js',
     'gulpfile.js',
   ],
   html: [
@@ -21,7 +20,11 @@ var files = {
     dir.src +'*.scss',
   ],
   js: [
-    dir.src +'*.js',
+    dir.src +'**/*.js',
+    '!'+ dir.src +'**/*.spec.js',
+  ],
+  spec: [
+    dir.src +'**/*.spec.js',
   ],
 };
 
