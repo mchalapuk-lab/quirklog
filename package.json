@@ -1,5 +1,5 @@
 {
-  "name": "browser-event-log",
+  "name": "dom-event-logger",
   "version": "0.1.0",
   "description": "Configurable event and property change logger for web browser.",
   "main": "index.js",
