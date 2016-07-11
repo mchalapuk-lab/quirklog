@@ -95,12 +95,17 @@ gulp.task('autoreload', function() {
 
   gulp.watch(config.files.config, function() {
     gulp.start('lint:config');
-    actualGulp.kill();
+    actualGulp.kill('SIGUSR1');
     spawnAnotherChild();
   });
 
   function spawnAnotherChild() {
     actualGulp = child.spawn('gulp', [ yargs.argv.task ], { stdio: 'inherit' });
+    actualGulp.on('close', function(code, signal) {
+      if (signal !== 'SIGUSR1') {
+        process.exit(code);
+      }
+    });
   }
 
   spawnAnotherChild();
