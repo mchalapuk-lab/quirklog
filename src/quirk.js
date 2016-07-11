@@ -8,9 +8,7 @@ module.exports = {
 };
 
 function BrowserEvent(init) {
-  check(init, 'init').isNotEmpty();
-
-  var priv = {};
+  var priv = Quirk.call({}, init);
   priv.event = check(init.event, 'init.event').isNotEmpty().value;
 
   var pub = visitBrowserEvent.bind(null, priv);
@@ -20,14 +18,13 @@ function BrowserEvent(init) {
 
 function visitBrowserEvent(priv, visitor) {
   return visitor.visitBrowserEvent({
+    timestamp: priv.timestamp,
     event: priv.event,
   });
 }
 
 function PropertyChange(init) {
-  check(init, 'init').isNotEmpty();
-
-  var priv = {};
+  var priv = Quirk.call({}, init);
   priv.instance = check(init.instance, 'init.instance').isNotEmpty().value;
   priv.propertyName = check(init.propertyName, 'init.propertyName').isNotEmpty().value;
   priv.oldValue = check(init.oldValue, 'init.oldValue').isNotEmpty().value;
@@ -40,6 +37,7 @@ function PropertyChange(init) {
 
 function visitPropertyChange(priv, visitor) {
   return visitor.visitPropertyChange({
+    timestamp: priv.timestamp,
     instance: priv.instance,
     propertyName: priv.propertyName,
     oldValue: priv.oldValue,
@@ -47,6 +45,18 @@ function visitPropertyChange(priv, visitor) {
   });
 }
 
+function Quirk(init) {
+  var priv = this;
+  check(init, 'init').isNotEmpty();
+  priv.timestamp = check(init.timestamp, 'init.timestamp').isNumber().value;
+  return priv;
+}
+
 /*
   eslint-env node
  */
+
+/*
+  eslint consistent-this: 0
+ */
+

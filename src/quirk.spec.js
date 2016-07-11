@@ -5,11 +5,11 @@ var quirk = require('./quirk');
 var testParams = [
   [
     'BrowserEvent',
-    { event: { type: 'test' } },
+    { timestamp: 1, event: { type: 'test' } },
   ],
   [
     'PropertyChange',
-    { instance: 'a', propertyName: 'b', oldValue: 'c', newValue: 'd' },
+    { timestamp: 4, instance: 'a', propertyName: 'b', oldValue: 'c', newValue: 'd' },
   ],
 ];
 

@@ -20,22 +20,28 @@ check.prototype = {
     }
     return this;
   },
+  isNumber: function() {
+    if (typeof this.value !== 'number') {
+      throw new Error(this.name +' must be a number; got '+ this.value);
+    }
+    return this;
+  },
   isString: function() {
     if (typeof this.value !== 'string') {
-      throw new Error(this.name +' must be a string: '+ this.value);
+      throw new Error(this.name +' must be a string; got '+ this.value);
     }
     return this;
   },
   isFunction: function() {
     if (typeof this.value !== 'function') {
-      throw new Error(this.name +' must be a function: '+ this.value);
+      throw new Error(this.name +' must be a function; got '+ this.value);
     }
     return this;
   },
   isInstanceOf: function(Type) {
     check(Type).isNotEmpty().isFunction();
     if (!(this.value instanceof Type)) {
-      throw new Error(this.name +' must be of type '+ Type.name +': '+ this.value);
+      throw new Error(this.name +' must be instance of '+ Type.name +'; got '+ this.value);
     }
     return this;
   },
