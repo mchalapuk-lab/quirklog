@@ -1,5 +1,5 @@
 {
-  "name": "dom-event-logger",
+  "name": "quirklog",
   "version": "0.1.0",
   "description": "Configurable event and property change logger for web browser.",
   "main": "index.js",
@@ -36,8 +36,11 @@
     "gulp-sass": "^2.3.2",
     "gulp-stylelint": "^2.0.2",
     "gulp-util": "^3.0.7",
+    "jsdom": "^9.4.0",
     "underscore": "^1.8.3",
     "vinyl-source-stream": "^1.1.0",
     "yargs": "^4.7.1"
+  },
+  "dependencies": {
   }
 }
