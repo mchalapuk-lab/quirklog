@@ -21,9 +21,11 @@ var files = {
   ],
   js: [
     dir.src +'**/*.js',
+    '!'+ dir.src +'**/*.spec-helper.js',
     '!'+ dir.src +'**/*.spec.js',
   ],
   spec: [
+    dir.src +'**/*.spec-helper.js',
     dir.src +'**/*.spec.js',
   ],
 };

@@ -70,14 +70,15 @@ gulp.task('html', [ 'clean:html' ], function() {
   ;
 });
 
-gulp.task('default', [ 'html', 'css', 'javascript' ]);
+gulp.task('dist', [ 'html', 'css', 'javascript' ]);
+gulp.task('default', [ 'dist', 'spec' ]);
 
 gulp.task('fixme', _.partial(fixme, {
   file_patterns: [ '**/*.js', '**/*.scss' ],
   ignored_directories: [ 'node_modules/**', '.git/**', 'dist/**' ],
 }));
 
-gulp.task('watch', [ 'default' ], function() {
+gulp.task('watch', [ 'dist' ], function() {
   gulp.watch(config.files.html, [ 'html' ]);
   gulp.watch(config.files.css, [ 'sass' ]);
   gulp.watch(config.files.js, [ 'javascript', 'spec' ]);
