@@ -28,7 +28,6 @@ var config = require('./build.config');
     return gulp.src(config.files[key])
       .pipe(eslint())
       .pipe(eslint.format())
-      .pipe(eslint.failAfterError())
     ;
   });
 });

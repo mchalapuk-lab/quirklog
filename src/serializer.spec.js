@@ -13,16 +13,15 @@ describe('serializer,', function() {
     testedSerializer = new Serializer(window);
   });
 
-  var params = [
+  var simpleParams = [
     { type: 'number', value: 0 },
     { type: 'string', value: 'tolarance' },
     { type: 'object', value: { 'for': 'intolerance' } },
-    { type: 'function', value: function() {} },
     { type: 'undefined', value: undefined },
     { type: 'null', value: null },
   ];
 
-  params.forEach(function(param) {
+  simpleParams.forEach(function(param) {
     describe('when serializing a value of type '+ param.type, function() {
       it('produces a string', function() {
         var serialized = testedSerializer.serialize(param.value);
@@ -36,14 +35,14 @@ describe('serializer,', function() {
     });
   });
 
-  var params = [
+  var domParams = [
     { name: 'document', value: window.document },
     { name: 'window', value: window },
     { name: '<body> element', value: window.document.body },
     { name: '<b> element', value: window.document.body.firstChild },
   ];
 
-  params.forEach(function(param) {
+  domParams.forEach(function(param) {
     describe('when serializing an object containing a '+ param.name, function() {
       var expected = null;
       beforeEach(function() {
@@ -53,7 +52,7 @@ describe('serializer,', function() {
       it('produces back to an object with the same element', function() {
         var serialized = testedSerializer.serialize(expected);
         var deserialized = testedSerializer.deserialize(serialized);
-        expect(deserialized).toBe(expected);
+        expect(deserialized.elem).toBe(expected.elem);
       });
 
       describe('from another document', function() {
@@ -78,10 +77,8 @@ describe('serializer,', function() {
  */
 
 /*
-  eslint no-undefined: 0
- */
-
-/*
-  globals createDocument
+  eslint
+    no-undefined: 0
+    max-nested-callbacks: 0
  */
 
