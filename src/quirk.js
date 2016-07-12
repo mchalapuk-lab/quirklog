@@ -48,7 +48,8 @@ function visitPropertyChange(priv, visitor) {
 function Quirk(init) {
   var priv = this;
   check(init, 'init').isNotEmpty();
-  priv.timestamp = check(init.timestamp, 'init.timestamp').isNumber().value;
+  priv.timestamp = check(init.timestamp, 'init.timestamp')
+    .isArray().ofLength(2).containingNumbers().value;
   return priv;
 }
 
