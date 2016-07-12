@@ -26,10 +26,12 @@ function unsubscribe(priv, visitor) {
   if (index === -1) {
     throw new Error('visitor was not subscribed');
   }
+  priv.subscribers.splice(index, 1);
 }
 
 function emit(priv, quirk) {
   check(quirk, 'quirk').isFunction();
+  priv.subscribers.forEach(function(visitor) { quirk(visitor); });
 }
 
 function checkIsVisitor(value, name) {
