@@ -15,7 +15,7 @@ function check(value, name) {
 
 check.prototype = {
   isNotEmpty: function() {
-    if (!this.value) {
+    if (typeof this.value === 'undefined' || this.value === null) {
       throw new Error(this.name +' is required; got '+ this.value);
     }
     return this;
@@ -56,9 +56,14 @@ function arrayCheck() {}
 
 arrayCheck.prototype = {
   ofLength: function(requiredLength) {
-    check(requiredLength, 'requiredLength').isNumber();
-    if (this.value.length !== requiredLength) {
+    if (this.value.length !== check(requiredLength, 'requiredLength').isNumber().value) {
       throw new Error(this.name +'.length must be '+ requiredLength +'; got '+ this.value.length);
+    }
+    return this;
+  },
+  ofLengthGreaterThan: function(length) {
+    if (this.value.length <= check(length, 'length').isNumber().value) {
+      throw new Error(this.name +'.length must be > '+ length +'; got '+ this.value.length);
     }
     return this;
   },

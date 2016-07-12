@@ -41,22 +41,27 @@ describe('observer', function() {
       document.defaultView.close();
     });
 
-    function node() {
+    function target() {
       return document.createElement('p');
     }
 
     var errors = [
-      [ 'undefined nodes', undefined, undefined, 'nodes is required; got undefined' ],
-      [ 'empty nodes array', [], undefined, 'nodes.length must be > 0; got 0' ],
-      [ 'undefined events', [ node() ], undefined, 'events is required; got undefined' ],
-      [ 'empty events array', [ node() ], [], 'events.length must be > 0; got 0' ],
+      [ 'undefined targets', undefined, [ 'test' ], 'targets is required; got undefined' ],
+      [ 'empty targets array', [], [ 'test' ], 'targets.length must be > 0; got 0' ],
+      [ 'undefined events', [ target() ], undefined, 'events is required; got undefined' ],
+      [ 'empty events array', [ target() ], [], 'events.length must be > 0; got 0' ],
       [
-        'node without addEventListener function',
+        'target without addEventListener function',
         [ {} ],
-        [ 'load' ],
-        'node[0].addEventListener must be a function; got undefined',
+        [ 'test' ],
+        'targets[0].addEventListener must be a function; got undefined',
       ],
-      [ 'event that is not a string', [ node() ], [ 0 ], 'events[0] must be a string; got 0' ],
+      [
+        'event that is not a string',
+        [ target() ],
+        [ 0 ],
+        'events[0] must be a string; got 0',
+      ],
     ];
 
     errors.forEach(function(error) {
