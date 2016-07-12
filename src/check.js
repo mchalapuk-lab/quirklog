@@ -53,7 +53,7 @@ check.prototype = {
 
 function isOfType(checkObj, type) {
   if (typeof checkObj.value !== type) {
-    var article = "aeiou".indexOf(type[0]) == -1? 'a': 'an';
+    var article = 'aeiou'.indexOf(type[0]) === -1? 'a': 'an';
     throw new Error(checkObj.name +' must be '+ article +' '+ type +'; got '+ checkObj.value);
   }
   return checkObj;
