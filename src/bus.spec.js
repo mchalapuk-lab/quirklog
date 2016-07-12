@@ -69,6 +69,36 @@ describe('bus', function() {
         expect(function() { testedBus.emit(arg); }).toThrow(new Error(message));
       });
     });
+
+    it('doesn\'t throw when called with function as argument', function() {
+      testedBus.emit(function() {});
+    });
+
+    describe('with visitor subscribed', function() {
+      var visitor = new Visitor();
+
+      beforeEach(function() {
+        testedBus.subscribe(visitor);
+      });
+
+      it('calls this visitor', function() {
+        var quirk = spyOn({ quirk: function() {} }, 'quirk');
+        testedBus.emit(quirk);
+        expect(quirk).toHaveBeenCalledWith(visitor);
+      });
+
+      describe('and then unsubscribed', function() {
+        beforeEach(function() {
+          testedBus.unsubscribe(visitor);
+        });
+
+        it('desn\'t call this visitor', function() {
+          var quirk = spyOn({ quirk: function() {} }, 'quirk');
+          testedBus.emit(quirk);
+          expect(quirk).not.toHaveBeenCalled();
+        });
+      });
+    });
   });
 });
 
