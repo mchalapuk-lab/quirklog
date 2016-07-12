@@ -1,6 +1,7 @@
 'use strict';
 
 var Observer = require('./observer');
+var Visitor = require('./visitor');
 var Bus = require('./bus');
 
 var jsdom = require('jsdom');
@@ -48,8 +49,8 @@ describe('observer', function() {
     var errors = [
       [ 'undefined targets', undefined, [ 'test' ], 'targets is required; got undefined' ],
       [ 'empty targets array', [], [ 'test' ], 'targets.length must be > 0; got 0' ],
-      [ 'undefined events', [ target() ], undefined, 'events is required; got undefined' ],
-      [ 'empty events array', [ target() ], [], 'events.length must be > 0; got 0' ],
+      [ 'undefined events', [ target() ], undefined, 'eventTypes is required; got undefined' ],
+      [ 'empty events array', [ target() ], [], 'eventTypes.length must be > 0; got 0' ],
       [
         'target without addEventListener function',
         [ {} ],
@@ -60,7 +61,7 @@ describe('observer', function() {
         'event that is not a string',
         [ target() ],
         [ 0 ],
-        'events[0] must be a string; got 0',
+          'eventTypes[0] must be a string; got 0',
       ],
     ];
 
@@ -92,6 +93,73 @@ describe('observer', function() {
       });
     });
 
+    describe('after called with a window instance and [ '+ eventTypes +' ]', function() {
+      var window = null;
+      var visitor = null;
+
+      beforeEach(function() {
+        window = jsdom.jsdom().defaultView;
+        testedObserver.observeBrowserEvents(window, eventTypes);
+        visitor = new Visitor();
+        spyOn(visitor, 'visitBrowserEvent');
+        bus.subscribe(visitor);
+      });
+      afterEach(function() {
+        bus.unsubscribe(visitor);
+        window.close();
+      });
+    });
+
+    var eventTypes = [ 'testing', 'my', 'fancy', 'observer' ];
+
+    describe('after called with a window instance and [ '+ eventTypes +' ]', function() {
+      var window = null;
+      var visitor = null;
+
+      beforeEach(function() {
+        window = jsdom.jsdom().defaultView;
+        testedObserver.observeBrowserEvents(window, eventTypes);
+        visitor = new Visitor();
+        spyOn(visitor, 'visitBrowserEvent');
+        bus.subscribe(visitor);
+      });
+      afterEach(function() {
+        bus.unsubscribe(visitor);
+        window.close();
+      });
+
+      eventTypes.forEach(function(type) {
+        function getWindow(win) { return win; }
+        function getDocument(win) { return win.document; }
+        function getBody(win) { return win.document.body; }
+
+        var params = [
+          [ 'window', getWindow ],
+          [ 'document', getDocument ],
+          [ 'body', getBody ],
+        ];
+
+        params.forEach(function(param) {
+          var dispatchName = param[0];
+          var getEventTarget = param[1];
+
+          it('event of type '+ type +' dispatched on '+ dispatchName
+              +' results in quirk on a bus', function() {
+            var event = new window.CustomEvent(type);
+            var target = getEventTarget(window);
+            target.dispatchEvent(event);
+            expect(visitor.visitBrowserEvent).toHaveBeenCalled();
+
+            var args = visitor.visitBrowserEvent.calls.mostRecent.args;
+            expect(args.length).toBe(1);
+            expect(args[0].timestamp).toBe(jasmine.any(Array));
+            expect(args[0].event).toEqual(event);
+          });
+        });
+      });
+
+
+    });
   });
 });
 

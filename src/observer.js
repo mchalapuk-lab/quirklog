@@ -16,16 +16,16 @@ function Observer(bus) {
   return pub;
 }
 
-function observeBrowserEvents(priv, targets, events) {
+function observeBrowserEvents(priv, targets, eventTypes) {
   var targetArray = ensureArray(check(targets, 'targets').isNotEmpty().value);
-  var eventArray = ensureArray(check(events, 'events').isNotEmpty().value);
+  var eventArray = ensureArray(check(eventTypes, 'eventTypes').isNotEmpty().value);
 
   check(targetArray, 'targets').isArray().ofLengthGreaterThan(0).value.forEach(function(target, i) {
     check(target, 'targets['+ i +']').isObject();
     check(target.addEventListener, 'targets['+ i +'].addEventListener').isFunction();
   });
-  check(eventArray, 'events').isArray().ofLengthGreaterThan(0).value.forEach(function(eventName, i) {
-    check(eventName, 'events['+ i +']').isString();
+  check(eventArray, 'eventTypes').isArray().ofLengthGreaterThan(0).value.forEach(function(eventName, i) {
+    check(eventName, 'eventTypes['+ i +']').isString();
   });
 }
 
