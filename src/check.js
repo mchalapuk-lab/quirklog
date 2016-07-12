@@ -21,22 +21,19 @@ check.prototype = {
     return this;
   },
   isNumber: function() {
-    if (typeof this.value !== 'number') {
-      throw new Error(this.name +' must be a number; got '+ this.value);
-    }
-    return this;
+    return isOfType(this, 'number');
   },
   isString: function() {
-    if (typeof this.value !== 'string') {
-      throw new Error(this.name +' must be a string; got '+ this.value);
-    }
-    return this;
+    return isOfType(this, 'string');
   },
   isFunction: function() {
-    if (typeof this.value !== 'function') {
-      throw new Error(this.name +' must be a function; got '+ this.value);
-    }
-    return this;
+    return isOfType(this, 'function');
+  },
+  isObject: function() {
+    return isOfType(this, 'object');
+  },
+  isUndefined: function() {
+    return isOfType(this, 'undefined');
   },
   isArray: function() {
     if (!(this.value instanceof Array)) {
@@ -53,6 +50,14 @@ check.prototype = {
     return this;
   },
 };
+
+function isOfType(checkObj, type) {
+  if (typeof checkObj.value !== type) {
+    var article = "aeiou".indexOf(type[0]) == -1? 'a': 'an';
+    throw new Error(checkObj.name +' must be '+ article +' '+ type +'; got '+ checkObj.value);
+  }
+  return checkObj;
+}
 
 function arrayCheck() {}
 

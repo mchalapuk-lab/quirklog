@@ -45,7 +45,7 @@ describe('bus', function() {
 
   var emitErrors = [
     [ undefined, 'quirk must be a function; got undefined' ],
-    [ 'function', 'quirk must be an function; got function' ],
+    [ 'function', 'quirk must be a function; got function' ],
     [ {}, 'quirk must be a function; got [object Object]' ],
   ];
 
@@ -63,5 +63,11 @@ describe('bus', function() {
 
 /*
   eslint-env node, jasmine
+ */
+
+/*
+  eslint
+    max-nested-callbacks: 0
+    no-undefined: 0
  */
 

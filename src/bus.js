@@ -1,5 +1,8 @@
 'use strict';
 
+var check = require('./check');
+var Visitor = require('./visitor');
+
 module.exports = Bus;
 
 function Bus() {
@@ -14,13 +17,23 @@ function Bus() {
   return pub;
 }
 
-function subscribe(visitor) {
+function subscribe(priv, visitor) {
+  checkVisitor(visitor, 'visitor');
 }
 
-function unsubscribe(visitor) {
+function unsubscribe(priv, visitor) {
+  checkVisitor(visitor, 'visitor');
 }
 
-function emit() {
+function emit(priv, quirk) {
+  check(quirk, 'quirk').isFunction();
+}
+
+function checkVisitor(value, name) {
+  check(value, name).isObject();
+  Object.keys(Visitor.prototype).forEach(function(key) {
+    check(value[key], name +'.'+ key).isFunction();
+  });
 }
 
 /*
