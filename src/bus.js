@@ -7,7 +7,7 @@ module.exports = Bus;
 
 function Bus() {
   var priv = {};
-  priv.subscribers = {};
+  priv.subscribers = [];
 
   var pub = {};
   pub.constructor = Bus;
@@ -18,22 +18,26 @@ function Bus() {
 }
 
 function subscribe(priv, visitor) {
-  checkVisitor(visitor, 'visitor');
+  priv.subscribers.push(checkIsVisitor(visitor, 'visitor'));
 }
 
 function unsubscribe(priv, visitor) {
-  checkVisitor(visitor, 'visitor');
+  var index = priv.subscribers.indexOf(checkIsVisitor(visitor, 'visitor'));
+  if (index === -1) {
+    throw new Error('visitor was not subscribed');
+  }
 }
 
 function emit(priv, quirk) {
   check(quirk, 'quirk').isFunction();
 }
 
-function checkVisitor(value, name) {
+function checkIsVisitor(value, name) {
   check(value, name).isObject();
   Object.keys(Visitor.prototype).forEach(function(key) {
     check(value[key], name +'.'+ key).isFunction();
   });
+  return value;
 }
 
 /*

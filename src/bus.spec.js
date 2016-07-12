@@ -44,14 +44,14 @@ describe('bus', function() {
 
     it('throws when called with visitor which was not subscribed', function() {
       expect(function() { testedBus.unsubscribe(new Visitor()); })
-        .toThrow(new Error('passed visitor was not subscribed'));
+        .toThrow(new Error('visitor was not subscribed'));
     });
 
     it('doesn\'t throw when called wuth previously subscribed visitor', function() {
       var visitor = new Visitor();
       testedBus.subscribe(visitor);
       testedBus.unsubscribe(visitor);
-    })
+    });
   });
 
   var emitErrors = [
