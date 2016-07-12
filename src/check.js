@@ -16,7 +16,7 @@ function check(value, name) {
 check.prototype = {
   isNotEmpty: function() {
     if (!this.value) {
-      throw new Error(this.name +'is required: '+ this.value);
+      throw new Error(this.name +' is required; got '+ this.value);
     }
     return this;
   },
@@ -79,8 +79,8 @@ arrayCheck.prototype = {
     if (errors.length) {
       var value = this.value;
       function buildString(string, index) { return string + ', '+ index +':'+ value[index]; }
-      var errValStr = errors.reduce(buildString, '').substr(1);
-      throw new Error(this.name +' must contain only '+ filterName +'; got {'+ errValStr +'}');
+      var errValStr = errors.reduce(buildString, '').substr(2);
+      throw new Error(this.name +' must contain only '+ filterName +'; got { '+ errValStr +' }');
     }
     return this;
   },
