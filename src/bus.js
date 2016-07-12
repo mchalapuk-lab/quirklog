@@ -17,6 +17,9 @@ function Bus() {
   return pub;
 }
 
+Bus.prototype = {};
+Bus.prototype.constructor = Bus;
+
 function subscribe(priv, visitor) {
   priv.subscribers.push(checkIsVisitor(visitor, 'visitor'));
 }

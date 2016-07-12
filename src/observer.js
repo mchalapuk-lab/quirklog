@@ -4,8 +4,10 @@ var check = require('./check');
 
 module.exports = Observer;
 
-function Observer() {
+function Observer(bus) {
   var priv = {};
+  priv.bus = check(bus, 'bus').isNotEmpty();
+  check(bus.emit, 'bus.emit').isFunction();
 
   var pub = {};
   pub.constructor = Observer;

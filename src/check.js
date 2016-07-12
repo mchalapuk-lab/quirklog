@@ -36,17 +36,10 @@ check.prototype = {
     return isOfType(this, 'undefined');
   },
   isArray: function() {
-    if (!(this.value instanceof Array)) {
+    if (Object.prototype.toString.call(this.value) !== '[object Array]') {
       throw new Error(this.name +' must be an array; got '+ this.value);
     }
     Object.setPrototypeOf(this, arrayCheck.prototype);
-    return this;
-  },
-  isInstanceOf: function(Type) {
-    check(Type).isNotEmpty().isFunction();
-    if (!(this.value instanceof Type)) {
-      throw new Error(this.name +' must be instance of '+ Type.name +'; got '+ this.value);
-    }
     return this;
   },
 };
