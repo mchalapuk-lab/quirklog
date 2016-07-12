@@ -1,13 +1,16 @@
 'use strict';
 
 var check = require('./check');
+var quirk = require('./quirk');
 
 module.exports = Observer;
 
-function Observer(bus) {
+function Observer(bus, timestamp) {
   var priv = {};
-  priv.bus = check(bus, 'bus').isNotEmpty();
+  priv.bus = check(bus, 'bus').isNotEmpty().value;
   check(bus.emit, 'bus.emit').isFunction();
+  priv.timestamp = check(timestamp, 'timestamp').isFunction().value;
+  priv.emitBrowserEvent = emitBrowserEvent.bind(priv, priv);
 
   var pub = {};
   pub.constructor = Observer;
@@ -27,9 +30,22 @@ function observeBrowserEvents(priv, targets, eventTypes) {
   check(eventArray, 'eventTypes').isArray().ofLengthGreaterThan(0).value.forEach(function(eventName, i) {
     check(eventName, 'eventTypes['+ i +']').isString();
   });
+
+  targetArray.forEach(function(target) {
+    eventArray.forEach(function(eventType) {
+      target.addEventListener(eventType, priv.emitBrowserEvent);
+    });
+  });
 }
 
 function observePropertyChanges(priv, objects, propertyNames) {
+}
+
+function emitBrowserEvent(priv, event) {
+  priv.bus.emit(new quirk.BrowserEvent({
+    timestamp: priv.timestamp(),
+    event: event,
+  }));
 }
 
 function ensureArray(maybeArray) {
