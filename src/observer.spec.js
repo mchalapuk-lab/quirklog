@@ -75,6 +75,23 @@ describe('observer', function() {
           .toThrow(new Error(message));
       });
     });
+
+    var nonErrors = [
+      [ 'targets and events as arrays', [ target() ], [ 'test' ] ],
+      [ 'targets as array and event as string', [ target() ], 'test' ],
+      [ 'target as object and events as array', target(), [ 'test' ] ],
+    ];
+
+    nonErrors.forEach(function(error) {
+      var testName = error[0];
+      var arg0 = error[1];
+      var arg1 = error[2];
+
+      it('should not throw when called with '+ testName, function() {
+        testedObserver.observeBrowserEvents(arg0, arg1);
+      });
+    });
+
   });
 });
 
