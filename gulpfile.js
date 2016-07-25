@@ -117,7 +117,6 @@ gulp.task('autoreload', function() {
 
 /*
   eslint
-    camelcase: 0,
     no-process-exit: 0,
 */
 
