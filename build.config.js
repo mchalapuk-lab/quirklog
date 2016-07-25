@@ -12,6 +12,8 @@ var files = {
   config: [
     'build.config.js',
     'gulpfile.js',
+    '.stylelintrc',
+    '.eslintrc',
   ],
   html: [
     dir.src +'*.html',
