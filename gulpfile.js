@@ -95,19 +95,19 @@ gulp.task('autoreload', function() {
 
   gulp.watch(config.files.config, function() {
     gulp.start('lint:config');
-    actualGulp.kill('SIGUSR1');
+    actualGulp.kill('SIGTERM');
     spawnAnotherChild();
   });
 
   function spawnAnotherChild() {
     actualGulp = child.spawn('gulp', [ yargs.argv.task ], { stdio: 'inherit' });
-    actualGulp.on('close', function(code, signal) {
-      if (signal !== 'SIGUSR1') {
-        process.exit(code);
-      }
-    });
+    actualGulp.on('exit', maybeExitParent);
   }
-
+  function maybeExitParent(code, signal) {
+    if (signal !== 'SIGTERM') {
+      process.exit(code);
+    }
+  }
   spawnAnotherChild();
 });
 
@@ -116,6 +116,8 @@ gulp.task('autoreload', function() {
 */
 
 /*
-  eslint camelcase:0
+  eslint
+    camelcase: 0,
+    no-process-exit: 0,
 */
 
