@@ -43,6 +43,10 @@ function emitBrowserEvent(priv, event) {
   }));
 }
 
+/*
+  eslint-disable no-underscore-dangle
+ */
+
 function ensureArray(maybeArray) {
   if (check.nothrow(maybeArray).is.anArray._result) {
     return maybeArray;

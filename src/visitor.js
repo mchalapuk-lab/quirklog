@@ -35,3 +35,7 @@ function noop() {}
   eslint-env node
  */
 
+/*
+  eslint
+    no-invalid-this: 0,
+ */
