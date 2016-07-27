@@ -5,6 +5,9 @@ var jsdom = require('jsdom');
 var Serializer = require('./serializer');
 
 var window = jsdom.jsdom('<body><div><b>You\'re so bold!</b><div></body>').defaultView;
+window.document.evaluate = function() {
+  throw new Error('not working very well in jsdom');
+};
 
 describe('serializer,', function() {
   var testedSerializer = null;
@@ -51,9 +54,7 @@ describe('serializer,', function() {
 
       it('deserializes back to an object with the same element', function() {
         var serialized = testedSerializer.serialize(expected);
-        console.log(serialized);
         var deserialized = testedSerializer.deserialize(serialized);
-        console.log(deserialized);
         expect(deserialized.elem).toBe(expected.elem);
       });
 
