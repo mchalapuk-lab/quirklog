@@ -9,10 +9,10 @@ var testParams = [
     [
       [ 'timestamp', undefined, 'init.timestamp must be an array; got undefined' ],
       [ 'timestamp', [], 'init.timestamp.length must be 2; got 0' ],
-      [ 'timestamp', [ {}, 4 ], 'init.timestamp must contain only numbers; got { 0:[object Object] }' ],
-      [ 'timestamp', [ 0, null ], 'init.timestamp must contain only numbers; got { 1:null }' ],
+      [ 'timestamp', [ {}, 4 ], 'init.timestamp[0] must be a number; got [object Object]' ],
+      [ 'timestamp', [ 0, null ], 'init.timestamp[1] must be a number; got null' ],
       [ 'timestamp', undefined, 'init.timestamp must be an array; got undefined' ],
-      [ 'event', undefined, 'init.event is required; got undefined' ],
+      [ 'event', undefined, 'init.event must be not empty; got undefined' ],
     ],
   ],
   [
@@ -20,10 +20,10 @@ var testParams = [
     { timestamp: [ 0, 4 ], instance: 'a', propertyName: 'b', oldValue: 'c', newValue: 'd' },
     [
       [ 'timestamp', undefined, 'init.timestamp must be an array; got undefined' ],
-      [ 'instance', undefined, 'init.instance is required; got undefined' ],
-      [ 'propertyName', undefined, 'init.propertyName is required; got undefined' ],
-      [ 'oldValue', undefined, 'init.oldValue is required; got undefined' ],
-      [ 'newValue', undefined, 'init.newValue is required; got undefined' ],
+      [ 'instance', undefined, 'init.instance must be not empty; got undefined' ],
+      [ 'propertyName', undefined, 'init.propertyName must be not empty; got undefined' ],
+      [ 'oldValue', undefined, 'init.oldValue must be not empty; got undefined' ],
+      [ 'newValue', undefined, 'init.newValue must be not empty; got undefined' ],
     ],
   ],
 ];

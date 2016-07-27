@@ -9,7 +9,7 @@ module.exports = {
 
 function BrowserEvent(init) {
   var priv = Quirk.call({}, init);
-  priv.event = check(init.event, 'init.event').isNotEmpty().value;
+  priv.event = check(init.event, 'init.event').is.not.Empty();
 
   var pub = visitBrowserEvent.bind(null, priv);
   pub.constructor = BrowserEvent;
@@ -25,10 +25,10 @@ function visitBrowserEvent(priv, visitor) {
 
 function PropertyChange(init) {
   var priv = Quirk.call({}, init);
-  priv.instance = check(init.instance, 'init.instance').isNotEmpty().value;
-  priv.propertyName = check(init.propertyName, 'init.propertyName').isNotEmpty().value;
-  priv.oldValue = check(init.oldValue, 'init.oldValue').isNotEmpty().value;
-  priv.newValue = check(init.newValue, 'init.newValue').isNotEmpty().value;
+  priv.instance = check(init.instance, 'init.instance').is.not.Empty();
+  priv.propertyName = check(init.propertyName, 'init.propertyName').is.not.Empty();
+  priv.oldValue = check(init.oldValue, 'init.oldValue').is.not.Empty();
+  priv.newValue = check(init.newValue, 'init.newValue').is.not.Empty();
 
   var pub = visitPropertyChange.bind(null, priv);
   pub.constructor = PropertyChange;
@@ -47,9 +47,8 @@ function visitPropertyChange(priv, visitor) {
 
 function Quirk(init) {
   var priv = this;
-  check(init, 'init').isNotEmpty();
-  priv.timestamp = check(init.timestamp, 'init.timestamp')
-    .isArray().ofLength(2).containingNumbers().value;
+  check(init, 'init').is.not.Empty();
+  priv.timestamp = check(init.timestamp, 'init.timestamp').is.aTimestamp();
   return priv;
 }
 

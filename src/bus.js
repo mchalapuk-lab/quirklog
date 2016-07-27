@@ -33,14 +33,14 @@ function unsubscribe(priv, visitor) {
 }
 
 function emit(priv, quirk) {
-  check(quirk, 'quirk').isFunction();
+  check(quirk, 'quirk').is.aFunction();
   priv.subscribers.forEach(function(visitor) { quirk(visitor); });
 }
 
 function checkIsVisitor(value, name) {
-  check(value, name).isObject();
+  check(value, name).is.anObject();
   Object.keys(Visitor.prototype).forEach(function(key) {
-    check(value[key], name +'.'+ key).isFunction();
+    check(value[key], name +'.'+ key).is.aFunction();
   });
   return value;
 }

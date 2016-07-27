@@ -7,9 +7,9 @@ module.exports = Observer;
 
 function Observer(bus, timestamp) {
   var priv = {};
-  priv.bus = check(bus, 'bus').isNotEmpty().value;
-  check(bus.emit, 'bus.emit').isFunction();
-  priv.timestamp = check(timestamp, 'timestamp').isFunction().value;
+  priv.bus = check(bus, 'bus').is.not.Empty();
+  check(bus.emit, 'bus.emit').is.aFunction();
+  priv.timestamp = check(timestamp, 'timestamp').is.aFunction();
   priv.emitBrowserEvent = emitBrowserEvent.bind(priv, priv);
 
   var pub = {};
@@ -20,16 +20,11 @@ function Observer(bus, timestamp) {
 }
 
 function observeBrowserEvents(priv, targets, eventTypes) {
-  var targetArray = ensureArray(check(targets, 'targets').isNotEmpty().value);
-  var eventArray = ensureArray(check(eventTypes, 'eventTypes').isNotEmpty().value);
+  var targetArray = ensureArray(check(targets, 'targets').is.not.Empty());
+  var eventArray = ensureArray(check(eventTypes, 'eventTypes').is.not.Empty());
 
-  check(targetArray, 'targets').isArray().ofLengthGreaterThan(0).value.forEach(function(target, i) {
-    check(target, 'targets['+ i +']').isObject();
-    check(target.addEventListener, 'targets['+ i +'].addEventListener').isFunction();
-  });
-  check(eventArray, 'eventTypes').isArray().ofLengthGreaterThan(0).value.forEach(function(eventName, i) {
-    check(eventName, 'eventTypes['+ i +']').isString();
-  });
+  check(targetArray, 'targets').has.not.length(0).and.contains.onlyEventTargets();
+  check(eventArray, 'eventTypes').has.not.length(0).and.contains.onlyStrings();
 
   targetArray.forEach(function(target) {
     eventArray.forEach(function(eventType) {
@@ -49,7 +44,10 @@ function emitBrowserEvent(priv, event) {
 }
 
 function ensureArray(maybeArray) {
-  return maybeArray.forEach && maybeArray.filter && maybeArray.splice? maybeArray: [ maybeArray ];
+  if (check.nothrow(maybeArray).is.anArray._result) {
+    return maybeArray;
+  }
+  return [ maybeArray ];
 }
 
 /*

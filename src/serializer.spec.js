@@ -49,9 +49,11 @@ describe('serializer,', function() {
         expected = { elem: param.value };
       });
 
-      it('produces back to an object with the same element', function() {
+      it('deserializes back to an object with the same element', function() {
         var serialized = testedSerializer.serialize(expected);
+        console.log(serialized);
         var deserialized = testedSerializer.deserialize(serialized);
+        console.log(deserialized);
         expect(deserialized.elem).toBe(expected.elem);
       });
 

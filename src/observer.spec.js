@@ -2,18 +2,18 @@
 
 var Observer = require('./observer');
 var Visitor = require('./visitor');
-var Bus = require('./bus');
 
 var jsdom = require('jsdom');
 
 function noop() {}
+function fakeBus() { return { emit: noop }; }
 
 describe('observer', function() {
   var constructorErrors = [
-    [ 'undefined bus', undefined, noop, 'bus is required; got undefined' ],
+    [ 'undefined bus', undefined, noop, 'bus must be not empty; got undefined' ],
     [ 'bus without emit method', {}, noop, 'bus.emit must be a function; got undefined' ],
-    [ 'undefined timestamp', new Bus(), undefined, 'timestamp must be a function; got undefined' ],
-    [ 'not callable timestamp', new Bus(), 0, 'timestamp must be a function; got 0' ],
+    [ 'undefined timestamp', fakeBus(), undefined, 'timestamp must be a function; got undefined' ],
+    [ 'not callable timestamp', fakeBus(), 0, 'timestamp must be a function; got 0' ],
   ];
 
   constructorErrors.forEach(function(error) {
@@ -23,12 +23,12 @@ describe('observer', function() {
     var message = error[3];
 
     it('should throw when constructed with '+ testName, function() {
-      expect(function() { return new Observer(arg0, arg1); }).toThrow(new Error(message));
+      expect(function() { return new Observer(arg0, arg1); }).toThrow(contractError(message));
     });
   });
 
   it('should create observer when constructed with proper arguments', function() {
-    var observer = new Observer(new Bus(), function() {});
+    var observer = new Observer(fakeBus(), noop);
     expect(observer).not.toBeNull();
     expect(observer.constructor).toBe(Observer);
   });
@@ -38,10 +38,17 @@ describe('observer', function() {
     var timestamp = null;
     var testedObserver = null;
 
-    beforeEach(function() {
-      bus = new Bus();
+    beforeAll(function() {
+      bus = fakeBus();
+      spyOn(bus, 'emit');
       timestamp = jasmine.createSpy().and.returnValue([ 3, 141592 ]);
+    });
+    beforeEach(function() {
       testedObserver = new Observer(bus, timestamp);
+    });
+    afterEach(function() {
+      bus.emit.calls.reset();
+      timestamp.calls.reset();
     });
 
     var document = jsdom.jsdom();
@@ -55,15 +62,15 @@ describe('observer', function() {
     }
 
     var errors = [
-      [ 'undefined targets', undefined, [ 'test' ], 'targets is required; got undefined' ],
-      [ 'empty targets array', [], [ 'test' ], 'targets.length must be > 0; got 0' ],
-      [ 'undefined events', [ aTarget() ], undefined, 'eventTypes is required; got undefined' ],
-      [ 'empty events array', [ aTarget() ], [], 'eventTypes.length must be > 0; got 0' ],
+      [ 'undefined targets', undefined, [ 'test' ], 'targets must be not empty; got undefined' ],
+      [ 'empty targets array', [], [ 'test' ], 'targets.length must be not 0; got 0' ],
+      [ 'undefined events', [ aTarget() ], undefined, 'eventTypes must be not empty; got undefined' ],
+      [ 'empty events array', [ aTarget() ], [], 'eventTypes.length must be not 0; got 0' ],
       [
         'target without addEventListener function',
         [ {} ],
         [ 'test' ],
-        'targets[0].addEventListener must be a function; got undefined',
+        'targets[0] must be an EventTarget; got [object Object]',
       ],
       [
         'event that is not a string',
@@ -81,7 +88,7 @@ describe('observer', function() {
 
       it('should throw when called with '+ testName, function() {
         expect(function() { testedObserver.observeBrowserEvents(arg0, arg1); })
-          .toThrow(new Error(message));
+          .toThrow(contractError(message));
       });
     });
 
@@ -105,17 +112,12 @@ describe('observer', function() {
 
     describe('after called with a window instance and [ '+ eventTypes +' ]', function() {
       var window = null;
-      var visitor = null;
 
       beforeEach(function() {
         window = jsdom.jsdom().defaultView;
         testedObserver.observeBrowserEvents(window, eventTypes);
-        visitor = new Visitor();
-        spyOn(visitor, 'visitBrowserEvent');
-        bus.subscribe(visitor);
       });
       afterEach(function() {
-        bus.unsubscribe(visitor);
         window.close();
       });
 
@@ -140,13 +142,15 @@ describe('observer', function() {
             var target = getEventTarget(window);
             target.dispatchEvent(event);
 
-            var calls = visitor.visitBrowserEvent.calls;
+            var calls = bus.emit.calls;
             expect(calls.count()).toBe(1);
 
             var args = calls.mostRecent().args;
             expect(args.length).toBe(1);
-            expect(args[0].timestamp).toEqual([ 3, 141592 ]);
-            expect(args[0].event).toEqual(event);
+
+            var properties = captureQuirkProperties(args[0]);
+            expect(properties.timestamp).toEqual([ 3, 141592 ]);
+            expect(properties.event).toBe(event);
           });
         });
       });
@@ -155,6 +159,18 @@ describe('observer', function() {
     });
   });
 });
+
+function contractError(message) {
+  var error = new Error(message);
+  error.name = 'ContractError';
+  return error;
+}
+
+function captureQuirkProperties(quirk) {
+  var properties = null;
+  quirk(new Visitor(function(props) { properties = props; }));
+  return properties;
+}
 
 /*
   eslint-env node, jasmine
