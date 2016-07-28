@@ -34,6 +34,13 @@ function observeBrowserEvents(priv, targets, eventTypes) {
 }
 
 function observePropertyChanges(priv, objects, propertyNames) {
+  var objectArray = ensureArray(check(objects, 'objects').is.not.Empty());
+  var propertyArray = ensureArray(check(propertyNames, 'propertyNames').is.not.Empty());
+
+  check(objectArray, 'objects').has.not.length(0).and.contains.onlyNotEmpty();
+  check(propertyArray, 'propertyNames').has.not.length(0).and.contains.onlyStrings();
+
+
 }
 
 function emitBrowserEvent(priv, event) {
@@ -42,10 +49,6 @@ function emitBrowserEvent(priv, event) {
     event: event,
   }));
 }
-
-/*
-  eslint-disable no-underscore-dangle
- */
 
 function ensureArray(maybeArray) {
   if (check.nothrow(maybeArray).is.anArray._result) {
@@ -56,5 +59,10 @@ function ensureArray(maybeArray) {
 
 /*
   eslint-env node
+ */
+
+/*
+  eslint
+    no-underscore-dangle: 0
  */
 

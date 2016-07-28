@@ -11,8 +11,14 @@ check.addAssertion('eventTarget', new Assertion(function(context) {
 }));
 
 check.addAssertion('onlyEventTargets', new Assertion(function(context) {
-  context.contains.onlyElements('an EventTarget', function(element) {
+  context.eachElementIs('an EventTarget', function(element) {
     return nothrow(element).is.eventTarget._result;
+  });
+}));
+
+check.addAssertion('onlyNotEmpty', new Assertion(function(context) {
+  context.eachElementIs('not empty', function(element) {
+    return nothrow(element).is.not.Empty._result;
   });
 }));
 
