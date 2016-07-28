@@ -159,53 +159,72 @@ describe('observer', function() {
 
   describe('.observePropertyChanges', function() {
     var errors = [
-      [ 'undefined objects', undefined, [ 'test' ], 'objects must be not empty; got undefined' ],
-      [ 'empty objects array', [], [ 'test' ], 'objects.length must be not 0; got 0' ],
-      [ 'undefined property names', [ {} ], undefined, 'propertyNames must be not empty; got undefined' ],
-      [ 'empty property names array', [ {} ], [], 'propertyNames.length must be not 0; got 0' ],
-      [
-        'undefined object',
-        [ undefined ],
-        [ 'test' ],
-        'objects[0] must be not empty; got undefined',
-      ],
-      [
-        'property name that is not a string',
-        [ {} ],
-        [ 0 ],
-        'propertyNames[0] must be a string; got 0',
-      ],
+      [ 'undefined id', undefined, {}, [ 'test' ], 'id must be a string; got undefined' ],
+      [ 'undefined object', 'id', undefined, [ 'test' ], 'object must be not empty; got undefined' ],
+      [ 'undefined property names', 'id', {}, undefined, 'propertyNames must be not empty; got undefined' ],
+      [ 'empty property names array', 'id', {}, [], 'propertyNames.length must be not 0; got 0' ],
+      [ 'property name that is not a string', 'id', {}, [ 0 ], 'propertyNames[0] must be a string; got 0' ],
     ];
 
     errors.forEach(function(error) {
       var testName = error[0];
       var arg0 = error[1];
       var arg1 = error[2];
-      var message = error[3];
+      var arg2 = error[3];
+      var message = error[4];
 
       it('should throw when called with '+ testName, function() {
-        expect(function() { testedObserver.observePropertyChanges(arg0, arg1); })
+        expect(function() { testedObserver.observePropertyChanges(arg0, arg1, arg2); })
           .toThrow(contractError(message));
       });
     });
 
     var nonErrors = [
-      [ 'objects and property names as arrays', [ {} ], [ 'test' ] ],
-      [ 'objects as array and property names as string', [ {} ], 'test' ],
-      [ 'objects as object and property names as array', {}, [ 'test' ] ],
+      [ 'property names as arrays', 'id', {}, [ 'test' ] ],
+      [ 'property names as string', 'id', {}, 'test' ],
     ];
 
     nonErrors.forEach(function(error) {
       var testName = error[0];
       var arg0 = error[1];
       var arg1 = error[2];
+      var arg2 = error[3];
 
       it('should not throw when called with '+ testName, function() {
-        testedObserver.observePropertyChanges(arg0, arg1);
+        testedObserver.observePropertyChanges(arg0, arg1, arg2);
       });
     });
 
+    var propertyChanges = [ 'testing', 'my', 'fancy', 'observer' ];
 
+    describe('after called with [ '+ propertyChanges +' ]', function() {
+      var id = null;
+      var object = null;
+
+      beforeEach(function() {
+        testedObserver.observePropertyChanges(id = 'id', object = {}, propertyChanges);
+      });
+
+      propertyChanges.forEach(function(propertyName) {
+        it('setting property "'+ propertyName +'" to true results in quirk on a bus', function() {
+          object[propertyName] = true;
+
+          var calls = bus.emit.calls;
+          expect(calls.count()).toBe(1);
+
+          var args = calls.mostRecent().args;
+          expect(args.length).toBe(1);
+
+          var properties = captureQuirkProperties(args[0]);
+          expect(properties.timestamp).toEqual([ 3, 141592 ]);
+          expect(properties.id).toBe(id);
+          expect(properties.instance).toBe(object);
+          expect(properties.propertyName).toBe(propertyName);
+          expect(properties.oldValue).toBe(undefined);
+          expect(properties.newValue).toBe(true);
+        });
+      });
+    });
   });
 });
 

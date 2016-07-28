@@ -33,11 +33,11 @@ function observeBrowserEvents(priv, targets, eventTypes) {
   });
 }
 
-function observePropertyChanges(priv, objects, propertyNames) {
-  var objectArray = ensureArray(check(objects, 'objects').is.not.Empty());
-  var propertyArray = ensureArray(check(propertyNames, 'propertyNames').is.not.Empty());
+function observePropertyChanges(priv, id, object, propertyNames) {
+  check(id, 'id').is.aString();
+  check(object, 'object').is.not.Empty();
 
-  check(objectArray, 'objects').has.not.length(0).and.contains.onlyNotEmpty();
+  var propertyArray = ensureArray(check(propertyNames, 'propertyNames').is.not.Empty());
   check(propertyArray, 'propertyNames').has.not.length(0).and.contains.onlyStrings();
 
 
