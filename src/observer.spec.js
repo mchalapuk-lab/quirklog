@@ -33,30 +33,30 @@ describe('observer', function() {
     expect(observer.constructor).toBe(Observer);
   });
 
+  var bus = null;
+  var timestamp = null;
+  var testedObserver = null;
+
+  beforeAll(function() {
+    bus = fakeBus();
+    spyOn(bus, 'emit');
+    timestamp = jasmine.createSpy().and.returnValue([ 3, 141592 ]);
+  });
+  beforeEach(function() {
+    testedObserver = new Observer(bus, timestamp);
+  });
+  afterEach(function() {
+    bus.emit.calls.reset();
+    timestamp.calls.reset();
+  });
+
+  var document = jsdom.jsdom();
+
+  afterAll(function() {
+    document.defaultView.close();
+  });
+
   describe('.observeBrowserEvents', function() {
-    var bus = null;
-    var timestamp = null;
-    var testedObserver = null;
-
-    beforeAll(function() {
-      bus = fakeBus();
-      spyOn(bus, 'emit');
-      timestamp = jasmine.createSpy().and.returnValue([ 3, 141592 ]);
-    });
-    beforeEach(function() {
-      testedObserver = new Observer(bus, timestamp);
-    });
-    afterEach(function() {
-      bus.emit.calls.reset();
-      timestamp.calls.reset();
-    });
-
-    var document = jsdom.jsdom();
-
-    afterAll(function() {
-      document.defaultView.close();
-    });
-
     function aTarget() {
       return document.createElement('p');
     }
@@ -154,9 +154,58 @@ describe('observer', function() {
           });
         });
       });
-
-
     });
+  });
+
+  describe('.observePropertyChanges', function() {
+    var errors = [
+      [ 'undefined objects', undefined, [ 'test' ], 'objects must be not empty; got undefined' ],
+      [ 'empty objects array', [], [ 'test' ], 'objects.length must be not 0; got 0' ],
+      [ 'undefined property names', [ {} ], undefined, 'propertyNames must be not empty; got undefined' ],
+      [ 'empty property names array', [ {} ], [], 'propertyNames.length must be not 0; got 0' ],
+      [
+        'undefined object',
+        [ undefined ],
+        [ 'test' ],
+        'objects[0] must be not empty; got undefined',
+      ],
+      [
+        'property name that is not a string',
+        [ {} ],
+        [ 0 ],
+        'propertyNames[0] must be a string; got 0',
+      ],
+    ];
+
+    errors.forEach(function(error) {
+      var testName = error[0];
+      var arg0 = error[1];
+      var arg1 = error[2];
+      var message = error[3];
+
+      it('should throw when called with '+ testName, function() {
+        expect(function() { testedObserver.observePropertyChanges(arg0, arg1); })
+          .toThrow(contractError(message));
+      });
+    });
+
+    var nonErrors = [
+      [ 'objects and property names as arrays', [ {} ], [ 'test' ] ],
+      [ 'objects as array and property names as string', [ {} ], 'test' ],
+      [ 'objects as object and property names as array', {}, [ 'test' ] ],
+    ];
+
+    nonErrors.forEach(function(error) {
+      var testName = error[0];
+      var arg0 = error[1];
+      var arg1 = error[2];
+
+      it('should not throw when called with '+ testName, function() {
+        testedObserver.observePropertyChanges(arg0, arg1);
+      });
+    });
+
+
   });
 });
 
