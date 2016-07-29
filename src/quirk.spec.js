@@ -11,19 +11,19 @@ var testParams = [
       [ 'timestamp', [], 'init.timestamp.length must be 2; got 0' ],
       [ 'timestamp', [ {}, 4 ], 'init.timestamp[0] must be a number; got [object Object]' ],
       [ 'timestamp', [ 0, null ], 'init.timestamp[1] must be a number; got null' ],
-      [ 'timestamp', undefined, 'init.timestamp must be an array; got undefined' ],
       [ 'event', undefined, 'init.event must be not empty; got undefined' ],
     ],
   ],
   [
     'PropertyChange',
-    { timestamp: [ 0, 4 ], instance: 'a', propertyName: 'b', oldValue: 'c', newValue: 'd' },
+    { timestamp: [ 0, 4 ], id: 'a', instance: 'a', propertyName: 'b', oldValue: 'c', newValue: 'd' },
     [
       [ 'timestamp', undefined, 'init.timestamp must be an array; got undefined' ],
+      [ 'id', undefined, 'init.id must be a string; got undefined' ],
       [ 'instance', undefined, 'init.instance must be not empty; got undefined' ],
-      [ 'propertyName', undefined, 'init.propertyName must be not empty; got undefined' ],
-      [ 'oldValue', undefined, 'init.oldValue must be not empty; got undefined' ],
-      [ 'newValue', undefined, 'init.newValue must be not empty; got undefined' ],
+      [ 'propertyName', undefined, 'init.propertyName must be a string; got undefined' ],
+      [ 'oldValue', undefined, 'init.oldValue must be not undefined; got undefined' ],
+      [ 'newValue', undefined, 'init.newValue must be not undefined; got undefined' ],
     ],
   ],
 ];
@@ -36,13 +36,10 @@ testParams.forEach(function(param) {
   var QuirkType = quirk[className];
 
   describe('quirk.'+ className, function() {
-    function Init() {}
-    Init.prototype = initProto;
-
     var init = null;
 
     beforeEach(function() {
-      init = new Init();
+      init = Object.assign({}, initProto);
     });
 
     errors.forEach(function(error) {
@@ -51,7 +48,11 @@ testParams.forEach(function(param) {
       var message = error[2];
 
       it('throws when called with init.'+ key +'='+ value, function() {
-        init[key] = value;
+        if (typeof value === 'undefined') {
+          delete init[key];
+        } else {
+          init[key] = value;
+        }
         expect(function() { return new QuirkType(init); }).toThrow(new Error(message));
       });
     });

@@ -25,10 +25,13 @@ function visitBrowserEvent(priv, visitor) {
 
 function PropertyChange(init) {
   var priv = Quirk.call({}, init);
+  check(init, 'init').has.property('oldValue').and.has.property('newValue');
+
+  priv.id = check(init.id, 'init.id').is.aString();
   priv.instance = check(init.instance, 'init.instance').is.not.Empty();
-  priv.propertyName = check(init.propertyName, 'init.propertyName').is.not.Empty();
-  priv.oldValue = check(init.oldValue, 'init.oldValue').is.not.Empty();
-  priv.newValue = check(init.newValue, 'init.newValue').is.not.Empty();
+  priv.propertyName = check(init.propertyName, 'init.propertyName').is.aString();
+  priv.oldValue = init.oldValue;
+  priv.newValue = init.newValue;
 
   var pub = visitPropertyChange.bind(null, priv);
   pub.constructor = PropertyChange;
@@ -38,6 +41,7 @@ function PropertyChange(init) {
 function visitPropertyChange(priv, visitor) {
   return visitor.visitPropertyChange({
     timestamp: priv.timestamp,
+    id: priv.id,
     instance: priv.instance,
     propertyName: priv.propertyName,
     oldValue: priv.oldValue,
