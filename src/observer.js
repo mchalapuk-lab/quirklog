@@ -40,7 +40,24 @@ function observePropertyChanges(priv, id, object, propertyNames) {
   var propertyArray = ensureArray(check(propertyNames, 'propertyNames').is.not.Empty());
   check(propertyArray, 'propertyNames').has.not.length(0).and.contains.onlyStrings();
 
+  var emit = emitPropertyChange.bind(null, priv, { id: id, instance: object });
 
+  Object.observe(object, function(changes) {
+    changes.forEach(function(change) {
+      if (propertyNames.indexOf(change.name) === -1) {
+        return;
+      }
+      switch (change.type) {
+        case 'add':
+        case 'update':
+        case 'delete':
+          emit(change);
+          return;
+        default:
+          return;
+      }
+    });
+  });
 }
 
 function emitBrowserEvent(priv, event) {
@@ -48,6 +65,15 @@ function emitBrowserEvent(priv, event) {
     timestamp: priv.timestamp(),
     event: event,
   }));
+}
+
+function emitPropertyChange(priv, initProto, change) {
+  var init = Object.create(initProto);
+  init.propertyName = change.name;
+  init.newValue = initProto.instance[change.name];
+  init.oldValue = change.oldValue;
+  init.timestamp = priv.timestamp();
+  priv.bus.emit(new quirk.PropertyChange(init));
 }
 
 function ensureArray(maybeArray) {
