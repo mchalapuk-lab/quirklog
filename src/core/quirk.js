@@ -11,8 +11,8 @@ function BrowserEvent(init) {
   var priv = Quirk.call({}, init);
   priv.event = check(init.event, 'init.event').is.not.Empty();
 
-  var pub = visitBrowserEvent.bind(null, priv);
-  pub.constructor = BrowserEvent;
+  var pub = Object.create(BrowserEvent.prototype);
+  pub.applyVisitor = visitBrowserEvent.bind(pub, priv);
   return pub;
 }
 
@@ -33,8 +33,8 @@ function PropertyChange(init) {
   priv.oldValue = init.oldValue;
   priv.newValue = init.newValue;
 
-  var pub = visitPropertyChange.bind(null, priv);
-  pub.constructor = PropertyChange;
+  var pub = Object.create(PropertyChange.prototype);
+  pub.applyVisitor = visitPropertyChange.bind(pub, priv);
   return pub;
 }
 
@@ -50,10 +50,11 @@ function visitPropertyChange(priv, visitor) {
 }
 
 function Quirk(init) {
-  var priv = this;
   check(init, 'init').is.not.Empty();
-  priv.timestamp = check(init.timestamp, 'init.timestamp').is.aTimestamp();
-  return priv;
+
+  var that = this;
+  that.timestamp = check(init.timestamp, 'init.timestamp').is.aTimestamp();
+  return that;
 }
 
 /*

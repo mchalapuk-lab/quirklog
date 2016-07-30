@@ -3,6 +3,8 @@
 var Assertion = require('offensive/lib/model/assertion');
 var check = require('offensive');
 
+var Visitor = require('./visitor');
+
 module.exports = check;
 module.exports.nothrow = nothrow;
 
@@ -32,8 +34,40 @@ check.addAssertion('aTimestamp', new Assertion(function(context) {
   context._pop();
 }));
 
+check.addAssertion('aVisitor', new Assertion(function(context) {
+  context._push();
+
+  if (!context.is.not.Empty._result) {
+    context._pop();
+    return;
+  }
+  context._reset();
+  context._push();
+
+  Object.keys(Visitor.prototype).forEach(function(key) {
+    if (context.has.method(key)._result) {
+      context._reset();
+      return;
+    }
+    context._pop();
+    noop(context._operatorContext.and);
+    context._push();
+  });
+
+  context._pop(true);
+  context._pop(true);
+}));
+
+check.addAssertion('aQuirk', new Assertion(function(context) {
+  context.has.method('applyVisitor');
+}));
+
 function nothrow(value) {
   return check.defensive(value, 'value');
+}
+
+function noop() {
+  // noop
 }
 
 /*

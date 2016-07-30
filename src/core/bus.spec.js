@@ -11,13 +11,11 @@ describe('bus', function() {
   });
 
   var subscribeErrors = [
-    [ undefined, 'visitor must be an object; got undefined' ],
-    [ 2, 'visitor must be an object; got 2' ],
-    [ 'me too!', 'visitor must be an object; got me too!' ],
-    [ {}, 'visitor.visitBrowserEvent must be a function; got undefined' ],
+    [ undefined, 'visitor must be not empty; got undefined' ],
     [
       { visitBrowserEvent: function() {} },
-      'visitor.visitPropertyChange must be a function; got undefined',
+      'visitor.visitPropertyChange must be a function; got undefined '+
+        'and visitor.visitOther must be a function; got undefined',
     ],
   ];
 
@@ -55,12 +53,13 @@ describe('bus', function() {
   });
 
   var emitErrors = [
-    [ undefined, 'quirk must be a function; got undefined' ],
-    [ 'function', 'quirk must be a function; got function' ],
-    [ {}, 'quirk must be a function; got [object Object]' ],
+    [ undefined, 'quirk must be not empty; got undefined' ],
+    [ {}, 'quirk.applyVisitor must be a function; got undefined' ],
   ];
 
   describe('.emit', function() {
+    var quirk = { applyVisitor: function() {} };
+
     emitErrors.forEach(function(param) {
       var arg = param[0];
       var message = param[1];
@@ -71,20 +70,25 @@ describe('bus', function() {
     });
 
     it('doesn\'t throw when called with function as argument', function() {
-      testedBus.emit(function() {});
+      testedBus.emit(quirk);
     });
 
     describe('with visitor subscribed', function() {
       var visitor = new Visitor();
 
+      beforeAll(function() {
+        spyOn(quirk, 'applyVisitor');
+      });
       beforeEach(function() {
         testedBus.subscribe(visitor);
       });
+      afterEach(function() {
+        quirk.applyVisitor.calls.reset();
+      });
 
       it('calls this visitor', function() {
-        var quirk = spyOn({ quirk: function() {} }, 'quirk');
         testedBus.emit(quirk);
-        expect(quirk).toHaveBeenCalledWith(visitor);
+        expect(quirk.applyVisitor).toHaveBeenCalledWith(visitor);
       });
 
       describe('and then unsubscribed', function() {
@@ -93,9 +97,8 @@ describe('bus', function() {
         });
 
         it('desn\'t call this visitor', function() {
-          var quirk = spyOn({ quirk: function() {} }, 'quirk');
           testedBus.emit(quirk);
-          expect(quirk).not.toHaveBeenCalled();
+          expect(quirk.applyVisitor).not.toHaveBeenCalled();
         });
       });
     });

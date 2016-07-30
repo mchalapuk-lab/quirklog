@@ -34,6 +34,12 @@ function observe($wnd) {
 var serializer = new Serializer(window);
 var bus = observe(window);
 
+bus.subscribe(new Visitor({
+  'visitBrowserEvent': function(quirk) {
+    console.log(quirk.event.constructor.name);
+    console.log(quirk.event.type);
+  },
+}));
 bus.subscribe(new Visitor(function(quirk) {
   var serialized = serializer.serialize(quirk);
   console.log(serialized);

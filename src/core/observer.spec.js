@@ -302,9 +302,7 @@ function contractError(message) {
 }
 
 function captureQuirkProperties(quirk) {
-  var properties = null;
-  quirk(new Visitor(function(props) { properties = props; }));
-  return properties;
+  return quirk.applyVisitor(new Visitor(function(props) { return props; }));
 }
 
 /*

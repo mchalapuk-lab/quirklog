@@ -648,391 +648,6 @@ if (typeof Object.create === 'function') {
 
 },{}],7:[function(require,module,exports){
 (function (global){
-
-(function(root, factory) {
-    if(typeof exports === 'object') {
-        module.exports = factory(require("lodash"), require, exports, module);
-    }
-    else if(typeof define === 'function' && define.amd) {
-        define(["lodash", 'require', 'exports', 'module'], factory);
-    }
-    else {
-        var req = function(id) {return root[id];},
-            exp = root,
-            mod = {exports: exp};
-        factory(_, req, exp, mod);
-    }
-}(this, function(_, require, exports, module) {
-/*
-	"object-observe - v0.0.1 - 	2014-10-07" 
-*/
-// Source: src/util/WeakMap.js
-if (typeof WeakMap === 'undefined') {
-  (function() {
-    var defineProperty = Object.defineProperty;
-    var counter = Date.now() % 1e9;
-
-    var WeakMap = function() {
-      this.name = '__st' + (Math.random() * 1e9 >>> 0) + (counter++ + '__');
-    };
-
-    WeakMap.prototype = {
-      set: function(key, value) {
-        var entry = key[this.name];
-        if (entry && entry[0] === key)
-          entry[1] = value;
-        else
-          defineProperty(key, this.name, {value: [key, value], writable: true});
-        return this;
-      },
-      get: function(key) {
-        var entry;
-        return (entry = key[this.name]) && entry[0] === key ?
-            entry[1] : undefined;
-      },
-      delete: function(key) {
-        var entry = key[this.name];
-        if (!entry) return false;
-        var hasValue = entry[0] === key;
-        entry[0] = entry[1] = undefined;
-        return hasValue;
-      },
-      has: function(key) {
-        var entry = key[this.name];
-        if (!entry) return false;
-        return entry[0] === key;
-      }
-    };
-
-    if(typeof window !== 'undefined'){
-       window.WeakMap = WeakMap;
-    }
-    if(typeof global !== 'undefined'){
-      global.WeakMap = WeakMap;
-    }
-  })();
-}
-// Source: src/util/validateArguments.js
- var isCallable = (function(toString){
-        var s = toString.call(toString),
-            u = typeof u;
-        return typeof this.alert === "object" ?
-          function isCallable(f){
-            return s === toString.call(f) || (!!f && typeof f.toString == u && typeof f.valueOf == u && /^\s*\bfunction\b/.test("" + f));
-          }:
-          function isCallable(f){
-            return s === toString.call(f);
-          }
-        ;
-    })(Object.prototype.toString);
-
-function validateArguments(O, callback, accept){
-	if(typeof(O)!=='object'){
-	  // Throw Error
-	  throw new TypeError("Object.observeObject called on non-object");
-	}
-	if(isCallable(callback)===false){
-	  // Throw Error
-	  throw new TypeError("Object.observeObject: Expecting function");
-	}
-	if(Object.isFrozen(callback)===true){
-	  // Throw Error
-	  throw new TypeError("Object.observeObject: Expecting unfrozen function");
-	}
-	if (accept !== undefined) {
-	  if (!Array.isArray(accept)) {
-	    throw new TypeError("Object.observeObject: Expecting acceptList in the form of an array");
-	  }
-	}
-}
-// Source: src/Object.observe.js
-if(!Object.observe){
-  (function(extend, global){
-  	var keys            = [];
-  	var performWeakMap  = new WeakMap();
-  	var oldValueWeakMap = new WeakMap();
-  	var propListWeakMap = new WeakMap();
-
-  	// Notify -------------------------------------start
-
-  	function _Notify(o){
-  		this.o = o;
-  	}
-
-  	_Notify.prototype.performChange = performChange;
-
-  	_Notify.prototype.notify = notify;
-
-  	//변경이 수행되어도 통지되지 않음.
-  	//accept .. ? ..
-  	//TODO
-  	function performChange(accept, callback, self){
-  		puse();
-  		_.times(keys.length, checker);
-  		callback.apply(self);
-  		_.forEach(keys, applyNewData);
-  		start();
-  	}
-
-  	function notify(notifyObject){
-  		var performs;
-  		performs = performWeakMap.get(notifyObject.object);
-  		_.forEach(performs, function(perform){
-  			if( perform.accept.indexOf(notifyObject.type) !== -1){
-  				perform.notify.push(notifyObject);
-  			}
-  		});
-  	}
-
-  	// Notify-------------------------------------end
-
-  	function observe(o, callback, accept){
-  		initKeys(o, callback);
-  		registPerform(o, callback, accept);
-  		initOldValue(o);
-  		initPropList(o);
-  		start();
-  	}
-
-  	function registPerform(o, callback, accept){
-  		validateArguments(o, callback, accept);
-  		accept = (_.isUndefined(accept)) ? ['add', 'update', 'delete', 'reconfigure', 'setPrototype', 'preventExtensions'] : accept;
-
-  		var performs = performWeakMap.get(o);
-  		performs.push({
-  			callback : callback,
-  			accept   : accept,
-  			notify   : []
-  		});
-  	}
-
-  	function unobserve(o, callback){
-  		validateArguments(o, callback);
-  		
-  		if(keys.indexOf(o) === -1){
-  			return;
-  		}
-
-  		var performs = performWeakMap.get(o);
-  		var i, l = performs.length;
-  		for(i = 0 ; i < l ; i ++){
-  			if( callback === performs[i].callback ){
-  				performs.splice(i, 2);
-  				l --;
-  			}
-  		}
-
-  		if(l === 0){
-  			deleteObserve(o);
-  		}
-  	}
-
-  	function deleteObserve(o){
-  		if(keys.indexOf(o) !== -1){
-  			performWeakMap.delete(o);
-  			oldValueWeakMap.delete(o);
-  			propListWeakMap.delete(o);
-  			_.pull(keys, o);
-  		}
-  	}
-
-  	function initKeys(o, callback){
-  		if(keys.indexOf(o) === -1){
-  			performWeakMap.set(o, []);
-  			oldValueWeakMap.set(o, {});
-  			propListWeakMap.set(o, []);
-  			keys.push(o);
-  		}
-  	}
-
-  	function initOldValue(o){
-  		var oldValueObj = {};
-  		_.forIn(o, function(val, prop){
-  			oldValueObj[prop] = val;
-  		});
-  		oldValueWeakMap.set(o, oldValueObj);
-  	}
-
-  	function initPropList(o){
-  		propListWeakMap.set(o, _.keys(o));
-  	}
-
-  	var checker = (function(){
-  		var noti,
-  				propList,
-  		 	  newPropList,
-  			  oldPropList,
-  			  deletePropList,
-  			  addPropList,
-  			  checkPropList,
-  			  updatePropList,
-  			  i = -1,
-  			  l,
-  			  o;
-
-  		function checker(){
-  			if( !checkKeys() ){
-  				return;
-  			}
-
-  			setValues();
-
-  			notifyUpdate();
-  			notifyAdd();
-  			notifyDelete();
-
-  			applyNewData(o);
-
-
-  			if(isTail()){
-  				i = -1;
-  				exec();
-  			}	
-  		}
-
-  		function checkKeys(){
-        if(keys.length === 0){
-          puse();
-          return false;
-        }
-        return true;
-      }
-
-      function isTail(){
-      	return i+1 >= l;
-      }
-
-  		function setValues(){
-  			l = keys.length;
-  			i++;
-
-				o    = keys[i];
-				noti = getNotifier(o);
-
-				newPropList = _.keys(o);
-				propList = propListWeakMap.get(o);
-				oldPropList = oldValueWeakMap.get(o);
-
-  			deletePropList = _.difference(propList, newPropList);
-  			addPropList    = _.difference(newPropList, propList);
-  			checkPropList  = _.difference(propList, deletePropList);
-  			updatePropList = [];
-  			_.forEach(checkPropList, function(checkProp){
-  				if(oldPropList[checkProp] !== o[checkProp]){
-  					updatePropList.push(checkProp);
-  				}
-  			});
-  		}
-
-  		function notifyUpdate(){
-  			_.forEach(updatePropList, function(prop){
-  				noti.notify({
-  					name     : prop,
-  					object   : o,
-  					type     : 'update',
-  					oldValue : oldPropList[prop]
-  				});
-  			});
-  		}
-
-  		function notifyAdd(){
-  			_.forEach(addPropList, function(prop){
-  				noti.notify({
-  					name   : prop,
-  					object : o,
-  					type   : 'add'
-  				});
-  			});
-  		}
-
-  		function notifyDelete(){
-  			_.forEach(deletePropList, function(prop){
-  				noti.notify({
-  					name     : prop,
-  					object   : o,
-  					type     : 'delete',
-  					oldValue : oldPropList[prop]
-  				});
-  			});
-  		}
-
-  		return checker;
-  	})();
-
-  	function applyNewData(o){
-  		propListWeakMap.set(o, _.keys(o));
-  		initOldValue(o);
-  	}
-
-  	var checkerID = -1;
-  	function start(){
-  		if(checkerID === -1){
-  			//checkerID = setImmediate(checker);
-        checkerID = setInterval(checker,1);
-  		}
-  	}
-
-  	function puse(){
-  		if(checkerID !== -1){
-  			//cleartImmediate(checkerID);
-        clearInterval(checkerID);
-  			checkerID = -1;
-  		}
-  	}
-
-  	function deliverChangeRecords(callback){
-  		if( !_.isFunction(callback) ){
-  			throw new TypeError();
-  		}
-  		
-  		puse();
-  		_.times(keys.length, checker);
-
-  		var performs;
-  		_.forEach(keys, function(o){
-  			performs = performWeakMap.get(o);
-  			_.forEach(performs, function(perform){
-  				if(	perform.notify.length !== 0	&& perform.callback == callback ){
-  					perform.callback(perform.notify);
-  					perform.notify = [];
-  				}
-  			});
-  		});
-
-  		start();
-  	}
-
-  	function exec(){
-  		var performs;
-  		_.forEach(keys, function(o){
-  			performs = performWeakMap.get(o);
-  			_.forEach(performs, function(perform){
-  				if(	perform.notify.length !== 0 ){
-  					perform.callback.call(undefined, perform.notify);
-  					perform.notify = [];
-  				}
-  			});
-  		});
-  		performs = null;
-  	}
-
-  	function getNotifier(o){
-  		return new _Notify(o);
-  	}
-
-		extend.observe              = observe;
-		extend.unobserve            = unobserve;
-		extend.deliverChangeRecords = deliverChangeRecords;
-		extend.getNotifier          = getNotifier;
-
-  })(Object, this);
-}
-return module.exports;
-}));
-
-}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"lodash":8}],8:[function(require,module,exports){
-(function (global){
 /**
  * @license
  * Lo-Dash 2.4.2 (Custom Build) <https://lodash.com/>
@@ -7821,7 +7436,392 @@ return module.exports;
 }.call(this));
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{}],9:[function(require,module,exports){
+},{}],8:[function(require,module,exports){
+(function (global){
+
+(function(root, factory) {
+    if(typeof exports === 'object') {
+        module.exports = factory(require("lodash"), require, exports, module);
+    }
+    else if(typeof define === 'function' && define.amd) {
+        define(["lodash", 'require', 'exports', 'module'], factory);
+    }
+    else {
+        var req = function(id) {return root[id];},
+            exp = root,
+            mod = {exports: exp};
+        factory(_, req, exp, mod);
+    }
+}(this, function(_, require, exports, module) {
+/*
+	"object-observe - v0.0.1 - 	2014-10-07" 
+*/
+// Source: src/util/WeakMap.js
+if (typeof WeakMap === 'undefined') {
+  (function() {
+    var defineProperty = Object.defineProperty;
+    var counter = Date.now() % 1e9;
+
+    var WeakMap = function() {
+      this.name = '__st' + (Math.random() * 1e9 >>> 0) + (counter++ + '__');
+    };
+
+    WeakMap.prototype = {
+      set: function(key, value) {
+        var entry = key[this.name];
+        if (entry && entry[0] === key)
+          entry[1] = value;
+        else
+          defineProperty(key, this.name, {value: [key, value], writable: true});
+        return this;
+      },
+      get: function(key) {
+        var entry;
+        return (entry = key[this.name]) && entry[0] === key ?
+            entry[1] : undefined;
+      },
+      delete: function(key) {
+        var entry = key[this.name];
+        if (!entry) return false;
+        var hasValue = entry[0] === key;
+        entry[0] = entry[1] = undefined;
+        return hasValue;
+      },
+      has: function(key) {
+        var entry = key[this.name];
+        if (!entry) return false;
+        return entry[0] === key;
+      }
+    };
+
+    if(typeof window !== 'undefined'){
+       window.WeakMap = WeakMap;
+    }
+    if(typeof global !== 'undefined'){
+      global.WeakMap = WeakMap;
+    }
+  })();
+}
+// Source: src/util/validateArguments.js
+ var isCallable = (function(toString){
+        var s = toString.call(toString),
+            u = typeof u;
+        return typeof this.alert === "object" ?
+          function isCallable(f){
+            return s === toString.call(f) || (!!f && typeof f.toString == u && typeof f.valueOf == u && /^\s*\bfunction\b/.test("" + f));
+          }:
+          function isCallable(f){
+            return s === toString.call(f);
+          }
+        ;
+    })(Object.prototype.toString);
+
+function validateArguments(O, callback, accept){
+	if(typeof(O)!=='object'){
+	  // Throw Error
+	  throw new TypeError("Object.observeObject called on non-object");
+	}
+	if(isCallable(callback)===false){
+	  // Throw Error
+	  throw new TypeError("Object.observeObject: Expecting function");
+	}
+	if(Object.isFrozen(callback)===true){
+	  // Throw Error
+	  throw new TypeError("Object.observeObject: Expecting unfrozen function");
+	}
+	if (accept !== undefined) {
+	  if (!Array.isArray(accept)) {
+	    throw new TypeError("Object.observeObject: Expecting acceptList in the form of an array");
+	  }
+	}
+}
+// Source: src/Object.observe.js
+if(!Object.observe){
+  (function(extend, global){
+  	var keys            = [];
+  	var performWeakMap  = new WeakMap();
+  	var oldValueWeakMap = new WeakMap();
+  	var propListWeakMap = new WeakMap();
+
+  	// Notify -------------------------------------start
+
+  	function _Notify(o){
+  		this.o = o;
+  	}
+
+  	_Notify.prototype.performChange = performChange;
+
+  	_Notify.prototype.notify = notify;
+
+  	//변경이 수행되어도 통지되지 않음.
+  	//accept .. ? ..
+  	//TODO
+  	function performChange(accept, callback, self){
+  		puse();
+  		_.times(keys.length, checker);
+  		callback.apply(self);
+  		_.forEach(keys, applyNewData);
+  		start();
+  	}
+
+  	function notify(notifyObject){
+  		var performs;
+  		performs = performWeakMap.get(notifyObject.object);
+  		_.forEach(performs, function(perform){
+  			if( perform.accept.indexOf(notifyObject.type) !== -1){
+  				perform.notify.push(notifyObject);
+  			}
+  		});
+  	}
+
+  	// Notify-------------------------------------end
+
+  	function observe(o, callback, accept){
+  		initKeys(o, callback);
+  		registPerform(o, callback, accept);
+  		initOldValue(o);
+  		initPropList(o);
+  		start();
+  	}
+
+  	function registPerform(o, callback, accept){
+  		validateArguments(o, callback, accept);
+  		accept = (_.isUndefined(accept)) ? ['add', 'update', 'delete', 'reconfigure', 'setPrototype', 'preventExtensions'] : accept;
+
+  		var performs = performWeakMap.get(o);
+  		performs.push({
+  			callback : callback,
+  			accept   : accept,
+  			notify   : []
+  		});
+  	}
+
+  	function unobserve(o, callback){
+  		validateArguments(o, callback);
+  		
+  		if(keys.indexOf(o) === -1){
+  			return;
+  		}
+
+  		var performs = performWeakMap.get(o);
+  		var i, l = performs.length;
+  		for(i = 0 ; i < l ; i ++){
+  			if( callback === performs[i].callback ){
+  				performs.splice(i, 2);
+  				l --;
+  			}
+  		}
+
+  		if(l === 0){
+  			deleteObserve(o);
+  		}
+  	}
+
+  	function deleteObserve(o){
+  		if(keys.indexOf(o) !== -1){
+  			performWeakMap.delete(o);
+  			oldValueWeakMap.delete(o);
+  			propListWeakMap.delete(o);
+  			_.pull(keys, o);
+  		}
+  	}
+
+  	function initKeys(o, callback){
+  		if(keys.indexOf(o) === -1){
+  			performWeakMap.set(o, []);
+  			oldValueWeakMap.set(o, {});
+  			propListWeakMap.set(o, []);
+  			keys.push(o);
+  		}
+  	}
+
+  	function initOldValue(o){
+  		var oldValueObj = {};
+  		_.forIn(o, function(val, prop){
+  			oldValueObj[prop] = val;
+  		});
+  		oldValueWeakMap.set(o, oldValueObj);
+  	}
+
+  	function initPropList(o){
+  		propListWeakMap.set(o, _.keys(o));
+  	}
+
+  	var checker = (function(){
+  		var noti,
+  				propList,
+  		 	  newPropList,
+  			  oldPropList,
+  			  deletePropList,
+  			  addPropList,
+  			  checkPropList,
+  			  updatePropList,
+  			  i = -1,
+  			  l,
+  			  o;
+
+  		function checker(){
+  			if( !checkKeys() ){
+  				return;
+  			}
+
+  			setValues();
+
+  			notifyUpdate();
+  			notifyAdd();
+  			notifyDelete();
+
+  			applyNewData(o);
+
+
+  			if(isTail()){
+  				i = -1;
+  				exec();
+  			}	
+  		}
+
+  		function checkKeys(){
+        if(keys.length === 0){
+          puse();
+          return false;
+        }
+        return true;
+      }
+
+      function isTail(){
+      	return i+1 >= l;
+      }
+
+  		function setValues(){
+  			l = keys.length;
+  			i++;
+
+				o    = keys[i];
+				noti = getNotifier(o);
+
+				newPropList = _.keys(o);
+				propList = propListWeakMap.get(o);
+				oldPropList = oldValueWeakMap.get(o);
+
+  			deletePropList = _.difference(propList, newPropList);
+  			addPropList    = _.difference(newPropList, propList);
+  			checkPropList  = _.difference(propList, deletePropList);
+  			updatePropList = [];
+  			_.forEach(checkPropList, function(checkProp){
+  				if(oldPropList[checkProp] !== o[checkProp]){
+  					updatePropList.push(checkProp);
+  				}
+  			});
+  		}
+
+  		function notifyUpdate(){
+  			_.forEach(updatePropList, function(prop){
+  				noti.notify({
+  					name     : prop,
+  					object   : o,
+  					type     : 'update',
+  					oldValue : oldPropList[prop]
+  				});
+  			});
+  		}
+
+  		function notifyAdd(){
+  			_.forEach(addPropList, function(prop){
+  				noti.notify({
+  					name   : prop,
+  					object : o,
+  					type   : 'add'
+  				});
+  			});
+  		}
+
+  		function notifyDelete(){
+  			_.forEach(deletePropList, function(prop){
+  				noti.notify({
+  					name     : prop,
+  					object   : o,
+  					type     : 'delete',
+  					oldValue : oldPropList[prop]
+  				});
+  			});
+  		}
+
+  		return checker;
+  	})();
+
+  	function applyNewData(o){
+  		propListWeakMap.set(o, _.keys(o));
+  		initOldValue(o);
+  	}
+
+  	var checkerID = -1;
+  	function start(){
+  		if(checkerID === -1){
+  			//checkerID = setImmediate(checker);
+        checkerID = setInterval(checker,1);
+  		}
+  	}
+
+  	function puse(){
+  		if(checkerID !== -1){
+  			//cleartImmediate(checkerID);
+        clearInterval(checkerID);
+  			checkerID = -1;
+  		}
+  	}
+
+  	function deliverChangeRecords(callback){
+  		if( !_.isFunction(callback) ){
+  			throw new TypeError();
+  		}
+  		
+  		puse();
+  		_.times(keys.length, checker);
+
+  		var performs;
+  		_.forEach(keys, function(o){
+  			performs = performWeakMap.get(o);
+  			_.forEach(performs, function(perform){
+  				if(	perform.notify.length !== 0	&& perform.callback == callback ){
+  					perform.callback(perform.notify);
+  					perform.notify = [];
+  				}
+  			});
+  		});
+
+  		start();
+  	}
+
+  	function exec(){
+  		var performs;
+  		_.forEach(keys, function(o){
+  			performs = performWeakMap.get(o);
+  			_.forEach(performs, function(perform){
+  				if(	perform.notify.length !== 0 ){
+  					perform.callback.call(undefined, perform.notify);
+  					perform.notify = [];
+  				}
+  			});
+  		});
+  		performs = null;
+  	}
+
+  	function getNotifier(o){
+  		return new _Notify(o);
+  	}
+
+		extend.observe              = observe;
+		extend.unobserve            = unobserve;
+		extend.deliverChangeRecords = deliverChangeRecords;
+		extend.getNotifier          = getNotifier;
+
+  })(Object, this);
+}
+return module.exports;
+}));
+
+}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
+},{"lodash":7}],9:[function(require,module,exports){
 'use strict';
 
 var Assertion = require('../../model/assertion');
@@ -9445,7 +9445,7 @@ function drainQueue() {
     if (draining) {
         return;
     }
-    var timeout = cachedSetTimeout(cleanUpNextTick);
+    var timeout = cachedSetTimeout.call(null, cleanUpNextTick);
     draining = true;
 
     var len = queue.length;
@@ -9462,7 +9462,7 @@ function drainQueue() {
     }
     currentQueue = null;
     draining = false;
-    cachedClearTimeout(timeout);
+    cachedClearTimeout.call(null, timeout);
 }
 
 process.nextTick = function (fun) {
@@ -9474,7 +9474,7 @@ process.nextTick = function (fun) {
     }
     queue.push(new Item(fun, args));
     if (queue.length === 1 && !draining) {
-        cachedSetTimeout(drainQueue, 0);
+        cachedSetTimeout.call(null, drainQueue, 0);
     }
 };
 
@@ -13312,7 +13312,7 @@ module.exports = (function() {
   var undefined;
 
   /** Used as the semantic version number. */
-  var VERSION = '4.14.0';
+  var VERSION = '4.14.1';
 
   /** Used as the size to enable large array optimizations. */
   var LARGE_ARRAY_SIZE = 200;
@@ -13429,7 +13429,8 @@ module.exports = (function() {
   /** Used to match property names within property paths. */
   var reIsDeepProp = /\.|\[(?:[^[\]]*|(["'])(?:(?!\1)[^\\]|\\.)*?\1)\]/,
       reIsPlainProp = /^\w*$/,
-      rePropName = /[^.[\]]+|\[(?:(-?\d+(?:\.\d+)?)|(["'])((?:(?!\2)[^\\]|\\.)*?)\2)\]|(?=(\.|\[\])(?:\4|$))/g;
+      reLeadingDot = /^\./,
+      rePropName = /[^.[\]]+|\[(?:(-?\d+(?:\.\d+)?)|(["'])((?:(?!\2)[^\\]|\\.)*?)\2)\]|(?=(?:\.|\[\])(?:\.|\[\]|$))/g;
 
   /**
    * Used to match `RegExp`
@@ -13670,10 +13671,10 @@ module.exports = (function() {
   var root = freeGlobal || freeSelf || Function('return this')();
 
   /** Detect free variable `exports`. */
-  var freeExports = freeGlobal && typeof exports == 'object' && exports;
+  var freeExports = typeof exports == 'object' && exports && !exports.nodeType && exports;
 
   /** Detect free variable `module`. */
-  var freeModule = freeExports && typeof module == 'object' && module;
+  var freeModule = freeExports && typeof module == 'object' && module && !module.nodeType && module;
 
   /** Detect the popular CommonJS extension `module.exports`. */
   var moduleExports = freeModule && freeModule.exports === freeExports;
@@ -15714,9 +15715,6 @@ module.exports = (function() {
         // Recursively populate clone (susceptible to call stack limits).
         assignValue(result, key, baseClone(subValue, isDeep, isFull, customizer, key, value, stack));
       });
-      if (!isFull) {
-        stack['delete'](value);
-      }
       return result;
     }
 
@@ -18308,15 +18306,14 @@ module.exports = (function() {
           end = step = undefined;
         }
         // Ensure the sign of `-0` is preserved.
-        start = toNumber(start);
-        start = start === start ? start : 0;
+        start = toFinite(start);
         if (end === undefined) {
           end = start;
           start = 0;
         } else {
-          end = toNumber(end) || 0;
+          end = toFinite(end);
         }
-        step = step === undefined ? (start < end ? 1 : -1) : (toNumber(step) || 0);
+        step = step === undefined ? (start < end ? 1 : -1) : toFinite(step);
         return baseRange(start, end, step, fromRight);
       };
     }
@@ -18589,6 +18586,7 @@ module.exports = (function() {
         }
       }
       stack['delete'](array);
+      stack['delete'](other);
       return result;
     }
 
@@ -18749,6 +18747,7 @@ module.exports = (function() {
         }
       }
       stack['delete'](object);
+      stack['delete'](other);
       return result;
     }
 
@@ -18924,7 +18923,7 @@ module.exports = (function() {
      * @param {Object} object The object to query.
      * @returns {Array} Returns the array of symbols.
      */
-    var getSymbolsIn = !nativeGetSymbols ? getSymbols : function(object) {
+    var getSymbolsIn = !nativeGetSymbols ? stubArray : function(object) {
       var result = [];
       while (object) {
         arrayPush(result, getSymbols(object));
@@ -19162,7 +19161,7 @@ module.exports = (function() {
      */
     function isFlattenable(value) {
       return isArray(value) || isArguments(value) ||
-        !!(spreadableSymbol && value && value[spreadableSymbol])
+        !!(spreadableSymbol && value && value[spreadableSymbol]);
     }
 
     /**
@@ -19515,8 +19514,13 @@ module.exports = (function() {
      * @returns {Array} Returns the property path array.
      */
     var stringToPath = memoize(function(string) {
+      string = toString(string);
+
       var result = [];
-      toString(string).replace(rePropName, function(match, number, quote, string) {
+      if (reLeadingDot.test(string)) {
+        result.push('');
+      }
+      string.replace(rePropName, function(match, number, quote, string) {
         result.push(quote ? string.replace(reEscapeChar, '$1') : (number || match));
       });
       return result;
@@ -23078,14 +23082,18 @@ module.exports = (function() {
      * milliseconds have elapsed since the last time the debounced function was
      * invoked. The debounced function comes with a `cancel` method to cancel
      * delayed `func` invocations and a `flush` method to immediately invoke them.
-     * Provide an options object to indicate whether `func` should be invoked on
-     * the leading and/or trailing edge of the `wait` timeout. The `func` is invoked
-     * with the last arguments provided to the debounced function. Subsequent calls
-     * to the debounced function return the result of the last `func` invocation.
+     * Provide `options` to indicate whether `func` should be invoked on the
+     * leading and/or trailing edge of the `wait` timeout. The `func` is invoked
+     * with the last arguments provided to the debounced function. Subsequent
+     * calls to the debounced function return the result of the last `func`
+     * invocation.
      *
-     * **Note:** If `leading` and `trailing` options are `true`, `func` is invoked
-     * on the trailing edge of the timeout only if the debounced function is
-     * invoked more than once during the `wait` timeout.
+     * **Note:** If `leading` and `trailing` options are `true`, `func` is
+     * invoked on the trailing edge of the timeout only if the debounced function
+     * is invoked more than once during the `wait` timeout.
+     *
+     * If `wait` is `0` and `leading` is `false`, `func` invocation is deferred
+     * until to the next tick, similar to `setTimeout` with a timeout of `0`.
      *
      * See [David Corbacho's article](https://css-tricks.com/debouncing-throttling-explained-examples/)
      * for details over the differences between `_.debounce` and `_.throttle`.
@@ -23673,8 +23681,8 @@ module.exports = (function() {
      * Creates a throttled function that only invokes `func` at most once per
      * every `wait` milliseconds. The throttled function comes with a `cancel`
      * method to cancel delayed `func` invocations and a `flush` method to
-     * immediately invoke them. Provide an options object to indicate whether
-     * `func` should be invoked on the leading and/or trailing edge of the `wait`
+     * immediately invoke them. Provide `options` to indicate whether `func`
+     * should be invoked on the leading and/or trailing edge of the `wait`
      * timeout. The `func` is invoked with the last arguments provided to the
      * throttled function. Subsequent calls to the throttled function return the
      * result of the last `func` invocation.
@@ -23682,6 +23690,9 @@ module.exports = (function() {
      * **Note:** If `leading` and `trailing` options are `true`, `func` is
      * invoked on the trailing edge of the timeout only if the throttled function
      * is invoked more than once during the `wait` timeout.
+     *
+     * If `wait` is `0` and `leading` is `false`, `func` invocation is deferred
+     * until to the next tick, similar to `setTimeout` with a timeout of `0`.
      *
      * See [David Corbacho's article](https://css-tricks.com/debouncing-throttling-explained-examples/)
      * for details over the differences between `_.throttle` and `_.debounce`.
@@ -23937,9 +23948,11 @@ module.exports = (function() {
     }
 
     /**
-     * Checks if `object` conforms to `source` by invoking the predicate properties
-     * of `source` with the corresponding property values of `object`. This method
-     * is equivalent to a `_.conforms` function when `source` is partially applied.
+     * Checks if `object` conforms to `source` by invoking the predicate
+     * properties of `source` with the corresponding property values of `object`.
+     *
+     * **Note:** This method is equivalent to `_.conforms` when `source` is
+     * partially applied.
      *
      * @static
      * @memberOf _
@@ -24607,10 +24620,10 @@ module.exports = (function() {
 
     /**
      * Performs a partial deep comparison between `object` and `source` to
-     * determine if `object` contains equivalent property values. This method is
-     * equivalent to a `_.matches` function when `source` is partially applied.
+     * determine if `object` contains equivalent property values.
      *
-     * **Note:** This method supports comparing the same values as `_.isEqual`.
+     * **Note:** This method supports comparing the same values as `_.isEqual`
+     * and is equivalent to `_.matches` when `source` is partially applied.
      *
      * @static
      * @memberOf _
@@ -26822,12 +26835,12 @@ module.exports = (function() {
      * // => true
      */
     function inRange(number, start, end) {
-      start = toNumber(start) || 0;
+      start = toFinite(start);
       if (end === undefined) {
         end = start;
         start = 0;
       } else {
-        end = toNumber(end) || 0;
+        end = toFinite(end);
       }
       number = toNumber(number);
       return baseInRange(number, start, end);
@@ -26883,12 +26896,12 @@ module.exports = (function() {
         upper = 1;
       }
       else {
-        lower = toNumber(lower) || 0;
+        lower = toFinite(lower);
         if (upper === undefined) {
           upper = lower;
           lower = 0;
         } else {
-          upper = toNumber(upper) || 0;
+          upper = toFinite(upper);
         }
       }
       if (lower > upper) {
@@ -28135,6 +28148,9 @@ module.exports = (function() {
      * the corresponding property values of a given object, returning `true` if
      * all predicates return truthy, else `false`.
      *
+     * **Note:** The created function is equivalent to `_.conformsTo` with
+     * `source` partially applied.
+     *
      * @static
      * @memberOf _
      * @since 4.0.0
@@ -28320,10 +28336,10 @@ module.exports = (function() {
     /**
      * Creates a function that performs a partial deep comparison between a given
      * object and `source`, returning `true` if the given object has equivalent
-     * property values, else `false`. The created function is equivalent to
-     * `_.isMatch` with a `source` partially applied.
+     * property values, else `false`.
      *
-     * **Note:** This method supports comparing the same values as `_.isEqual`.
+     * **Note:** The created function supports comparing the same values as
+     * `_.isEqual` is equivalent to `_.isMatch` with `source` partially applied.
      *
      * @static
      * @memberOf _
@@ -29928,6 +29944,12 @@ function observe($wnd) {
 var serializer = new Serializer(window);
 var bus = observe(window);
 
+bus.subscribe(new Visitor({
+  'visitBrowserEvent': function(quirk) {
+    console.log(quirk.event.constructor.name);
+    console.log(quirk.event.type);
+  },
+}));
 bus.subscribe(new Visitor(function(quirk) {
   var serialized = serializer.serialize(quirk);
   console.log(serialized);
@@ -29942,7 +29964,6 @@ bus.subscribe(new Visitor(function(quirk) {
 'use strict';
 
 var check = require('./check');
-var Visitor = require('./visitor');
 
 module.exports = Bus;
 
@@ -29962,28 +29983,24 @@ Bus.prototype = {};
 Bus.prototype.constructor = Bus;
 
 function subscribe(priv, visitor) {
-  priv.subscribers.push(checkIsVisitor(visitor, 'visitor'));
+  check(visitor, 'visitor').is.aVisitor();
+  priv.subscribers.push(visitor);
+  return priv.subscribers.length;
 }
 
 function unsubscribe(priv, visitor) {
-  var index = priv.subscribers.indexOf(checkIsVisitor(visitor, 'visitor'));
+  check(visitor, 'visitor').is.aVisitor();
+  var index = priv.subscribers.indexOf(visitor);
   if (index === -1) {
     throw new Error('visitor was not subscribed');
   }
   priv.subscribers.splice(index, 1);
+  return priv.subscribers.length;
 }
 
 function emit(priv, quirk) {
-  check(quirk, 'quirk').is.aFunction();
-  priv.subscribers.forEach(function(visitor) { quirk(visitor); });
-}
-
-function checkIsVisitor(value, name) {
-  check(value, name).is.anObject();
-  Object.keys(Visitor.prototype).forEach(function(key) {
-    check(value[key], name +'.'+ key).is.aFunction();
-  });
-  return value;
+  check(quirk, 'quirk').is.aQuirk();
+  priv.subscribers.forEach(function(visitor) { quirk.applyVisitor(visitor); });
 }
 
 /*
@@ -29991,11 +30008,13 @@ function checkIsVisitor(value, name) {
  */
 
 
-},{"./check":53,"./visitor":58}],53:[function(require,module,exports){
+},{"./check":53}],53:[function(require,module,exports){
 'use strict';
 
 var Assertion = require('offensive/lib/model/assertion');
 var check = require('offensive');
+
+var Visitor = require('./visitor');
 
 module.exports = check;
 module.exports.nothrow = nothrow;
@@ -30026,8 +30045,40 @@ check.addAssertion('aTimestamp', new Assertion(function(context) {
   context._pop();
 }));
 
+check.addAssertion('aVisitor', new Assertion(function(context) {
+  context._push();
+
+  if (!context.is.not.Empty._result) {
+    context._pop();
+    return;
+  }
+  context._reset();
+  context._push();
+
+  Object.keys(Visitor.prototype).forEach(function(key) {
+    if (context.has.method(key)._result) {
+      context._reset();
+      return;
+    }
+    context._pop();
+    noop(context._operatorContext.and);
+    context._push();
+  });
+
+  context._pop(true);
+  context._pop(true);
+}));
+
+check.addAssertion('aQuirk', new Assertion(function(context) {
+  context.has.method('applyVisitor');
+}));
+
 function nothrow(value) {
   return check.defensive(value, 'value');
+}
+
+function noop() {
+  // noop
 }
 
 /*
@@ -30041,7 +30092,7 @@ function nothrow(value) {
  */
 
 
-},{"offensive":33,"offensive/lib/model/assertion":20}],54:[function(require,module,exports){
+},{"./visitor":58,"offensive":33,"offensive/lib/model/assertion":20}],54:[function(require,module,exports){
 'use strict';
 
 require('../../node_modules/object-observe/dist/object-observe');
@@ -30128,7 +30179,7 @@ function ensureArray(maybeArray) {
  */
 
 
-},{"../../node_modules/object-observe/dist/object-observe":7,"./check":53,"./quirk":55}],55:[function(require,module,exports){
+},{"../../node_modules/object-observe/dist/object-observe":8,"./check":53,"./quirk":55}],55:[function(require,module,exports){
 'use strict';
 
 var check = require('./check');
@@ -30142,8 +30193,8 @@ function BrowserEvent(init) {
   var priv = Quirk.call({}, init);
   priv.event = check(init.event, 'init.event').is.not.Empty();
 
-  var pub = visitBrowserEvent.bind(null, priv);
-  pub.constructor = BrowserEvent;
+  var pub = Object.create(BrowserEvent.prototype);
+  pub.applyVisitor = visitBrowserEvent.bind(pub, priv);
   return pub;
 }
 
@@ -30164,8 +30215,8 @@ function PropertyChange(init) {
   priv.oldValue = init.oldValue;
   priv.newValue = init.newValue;
 
-  var pub = visitPropertyChange.bind(null, priv);
-  pub.constructor = PropertyChange;
+  var pub = Object.create(PropertyChange.prototype);
+  pub.applyVisitor = visitPropertyChange.bind(pub, priv);
   return pub;
 }
 
@@ -30181,10 +30232,11 @@ function visitPropertyChange(priv, visitor) {
 }
 
 function Quirk(init) {
-  var priv = this;
   check(init, 'init').is.not.Empty();
-  priv.timestamp = check(init.timestamp, 'init.timestamp').is.aTimestamp();
-  return priv;
+
+  var that = this;
+  that.timestamp = check(init.timestamp, 'init.timestamp').is.aTimestamp();
+  return that;
 }
 
 /*
@@ -30265,7 +30317,7 @@ function QuirkConnector(Class, visitMethod, properties) {
     return properties.map(function(key) { return valueMap[key]; });
   }
   function split(quirk) {
-    return quirk(visitor);
+    return quirk.applyVisitor(visitor);
   }
   function create(values) {
     var init = {};
@@ -30332,7 +30384,7 @@ function ensureObject(init) {
 }
 
 function callVisitOther(properties) {
-  this.visitOther(properties);
+  return this.visitOther(properties);
 }
 
 function noop() {}

@@ -68,7 +68,7 @@ testParams.forEach(function(param) {
           visitor[methodName] = function() {};
           var spy = spyOn(visitor, methodName);
 
-          testedQuirk(visitor);
+          testedQuirk.applyVisitor(visitor);
 
           var expectation = expect(spy);
           expectation.toHaveBeenCalledWith(init);

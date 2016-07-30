@@ -66,7 +66,7 @@ function QuirkConnector(Class, visitMethod, properties) {
     return properties.map(function(key) { return valueMap[key]; });
   }
   function split(quirk) {
-    return quirk(visitor);
+    return quirk.applyVisitor(visitor);
   }
   function create(values) {
     var init = {};

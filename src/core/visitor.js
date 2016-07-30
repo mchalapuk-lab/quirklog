@@ -26,7 +26,7 @@ function ensureObject(init) {
 }
 
 function callVisitOther(properties) {
-  this.visitOther(properties);
+  return this.visitOther(properties);
 }
 
 function noop() {}

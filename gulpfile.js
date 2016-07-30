@@ -32,8 +32,8 @@ var config = require('./build.config');
 
 gulp.task('javascript', [ 'clean:js', 'lint:js' ], function() {
   return browserify(config.dir.src +'app.js').bundle()
-   .pipe(source('app.js', config.dir.src).on('error', gutil.log))
-   .pipe(gulp.dest(config.dir.build))
+    .pipe(source('app.js', config.dir.src).on('error', gutil.log))
+    .pipe(gulp.dest(config.dir.build))
   ;
 });
 
@@ -100,5 +100,6 @@ gulp.task('autoreload', function() {
 /*
   eslint
     no-process-exit: 0,
+    camelcase: 0
 */
 
