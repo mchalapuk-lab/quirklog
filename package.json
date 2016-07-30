@@ -45,6 +45,6 @@
     "underscore": "^1.8.3",
     "wson": "^1.10.0",
     "wson-dom-connector": "^0.6.1",
-    "wson-event-connector": "^0.3.4"
+    "wson-event-connector": "^0.4.0"
   }
 }
