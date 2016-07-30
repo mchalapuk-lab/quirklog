@@ -43,6 +43,7 @@
   },
   "dependencies": {
     "browser-process-hrtime": "^0.1.2",
+    "object-observe": "0.0.2",
     "offensive": "^0.5.1",
     "underscore": "^1.8.3",
     "wson": "^1.10.0",

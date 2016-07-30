@@ -1,5 +1,7 @@
 'use strict';
 
+require('../../node_modules/object-observe/dist/object-observe');
+
 var check = require('./check');
 var quirk = require('./quirk');
 
