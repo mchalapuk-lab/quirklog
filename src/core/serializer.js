@@ -1,5 +1,8 @@
 'use strict';
 
+var Quirk = require('./quirk');
+var Visitor = require('./visitor');
+
 var WSON = require('wson');
 var domConnectors = require('wson-dom-connector');
 var eventConnectors = require('wson-event-connector');
@@ -7,10 +10,15 @@ var _ = require('underscore');
 
 module.exports = Serializer;
 
+var quirkConnectors = {
+  'BrowserEvent': new BrowserEventConnector(),
+  'PropertyChange': new PropertyChangeConnector(),
+};
+
 function Serializer(window) {
   var priv = {};
   priv.wson = new WSON({
-    connectors: _.extend(domConnectors(window), eventConnectors(window)),
+    connectors: _.extend({}, domConnectors(window), eventConnectors(window), quirkConnectors),
   });
 
   var pub = {};
@@ -36,6 +44,43 @@ function serialize(priv, object) {
 function deserialize(priv, string) {
   var object = priv.wson.parse(string);
   return object;
+}
+
+function BrowserEventConnector() {
+  return new QuirkConnector(Quirk.BrowserEvent, 'visitBrowserEvent', [
+    'timestamp', 'event',
+  ]);
+}
+
+function PropertyChangeConnector() {
+  return new QuirkConnector(Quirk.PropertyChange, 'visitPropertyChange', [
+    'timestamp', 'id', 'oldValue', 'newValue',
+  ]);
+}
+
+function QuirkConnector(Class, visitMethod, properties) {
+  var visitor = new Visitor();
+  visitor[visitMethod] = returnValues;
+
+  function returnValues(valueMap) {
+    return properties.map(function(key) { return valueMap[key]; });
+  }
+  function split(quirk) {
+    return quirk(visitor);
+  }
+  function create(values) {
+    var init = {};
+    properties.forEach(function(key, i) {
+      init[key] = values[i];
+    });
+    return new Class(init);
+  }
+
+  return {
+    by: Class,
+    split: split,
+    create: create,
+  };
 }
 
 /*
