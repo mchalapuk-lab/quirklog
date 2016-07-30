@@ -40,21 +40,10 @@ function observePropertyChanges(priv, id, object, propertyNames) {
   var propertyArray = ensureArray(check(propertyNames, 'propertyNames').is.not.Empty());
   check(propertyArray, 'propertyNames').has.not.length(0).and.contains.onlyStrings();
 
-  var emit = emitPropertyChange.bind(null, priv, { id: id, instance: object });
-
   Object.observe(object, function(changes) {
     changes.forEach(function(change) {
-      if (propertyNames.indexOf(change.name) === -1) {
-        return;
-      }
-      switch (change.type) {
-        case 'add':
-        case 'update':
-        case 'delete':
-          emit(change);
-          return;
-        default:
-          return;
+      if (propertyNames.indexOf(change.name) !== -1 && change.type.match(/add|update|delete/)) {
+        emitPropertyChange(priv, { id: id, instance: object }, change);
       }
     });
   });
