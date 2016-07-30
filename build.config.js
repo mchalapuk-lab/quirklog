@@ -18,9 +18,6 @@ var files = {
   html: [
     dir.src +'*.html',
   ],
-  css: [
-    dir.src +'*.scss',
-  ],
   js: [
     dir.src +'**/*.js',
     '!'+ dir.src +'**/*.spec-helper.js',

@@ -2,8 +2,6 @@
 
 var gulp = require('gulp');
 var gutil = require('gulp-util');
-var sass = require('gulp-sass');
-var stylelint = require('gulp-stylelint');
 var browserify = require('browserify');
 var source = require('vinyl-source-stream');
 var jasmine = require('gulp-jasmine');
@@ -17,7 +15,7 @@ var _ = require('underscore');
 
 var config = require('./build.config');
 
-[ 'html', 'css', 'js' ].forEach(function(ext) {
+[ 'html', 'js' ].forEach(function(ext) {
   gulp.task('clean:'+ ext, function(callback) {
     return del([ config.dir.build +'*.'+ ext ], callback);
   });
@@ -30,21 +28,6 @@ var config = require('./build.config');
       .pipe(eslint.format())
     ;
   });
-});
-
-gulp.task('lint:css', function() {
-  return gulp.src(config.files.css)
-    .pipe(stylelint({
-      reporters: [ { formatter: 'string', console: true } ],
-    }))
-  ;
-});
-
-gulp.task('css', [ 'clean:css', 'lint:css' ], function() {
-  return gulp.src(config.files.css)
-    .pipe(sass.sync().on('error', sass.logError))
-    .pipe(gulp.dest(config.dir.build))
-  ;
 });
 
 gulp.task('javascript', [ 'clean:js', 'lint:js' ], function() {
@@ -69,17 +52,16 @@ gulp.task('html', [ 'clean:html' ], function() {
   ;
 });
 
-gulp.task('dist', [ 'html', 'css', 'javascript' ]);
+gulp.task('dist', [ 'html', 'javascript' ]);
 gulp.task('default', [ 'dist', 'spec' ]);
 
 gulp.task('fixme', _.partial(fixme, {
-  file_patterns: [ '**/*.js', '**/*.scss' ],
+  file_patterns: [ '**/*.js' ],
   ignored_directories: [ 'node_modules/**', '.git/**', 'dist/**' ],
 }));
 
 gulp.task('watch', [ 'dist' ], function() {
   gulp.watch(config.files.html, [ 'html' ]);
-  gulp.watch(config.files.css, [ 'sass' ]);
   gulp.watch(config.files.js, [ 'javascript', 'spec' ]);
   gulp.watch(config.files.spec, [ 'spec' ]);
 

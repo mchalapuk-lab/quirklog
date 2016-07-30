@@ -33,11 +33,8 @@
     "gulp-connect": "^4.1.0",
     "gulp-eslint": "^3.0.0",
     "gulp-jasmine": "^2.4.0",
-    "gulp-sass": "^2.3.2",
-    "gulp-stylelint": "^2.0.2",
     "gulp-util": "^3.0.7",
     "jsdom": "^9.4.0",
-    "underscore": "^1.8.3",
     "vinyl-source-stream": "^1.1.0",
     "yargs": "^4.7.1"
   },
