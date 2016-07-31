@@ -15,7 +15,7 @@ var _ = require('underscore');
 
 var config = require('./build.config');
 
-[ 'html', 'js' ].forEach(function(ext) {
+[ 'html', 'css', 'js' ].forEach(function(ext) {
   gulp.task('clean:'+ ext, function(callback) {
     return del([ config.dir.build +'*.'+ ext ], callback);
   });
@@ -46,13 +46,15 @@ gulp.task('spec', [ 'lint:spec' ], function() {
   ;
 });
 
-gulp.task('html', [ 'clean:html' ], function() {
-  return gulp.src(config.files.html)
-    .pipe(gulp.dest(config.dir.build))
-  ;
+[ 'html', 'css' ].forEach(function(key) {
+  gulp.task(key, [ 'clean:'+ key ], function() {
+    return gulp.src(config.files[key])
+      .pipe(gulp.dest(config.dir.build))
+    ;
+  });
 });
 
-gulp.task('dist', [ 'html', 'javascript' ]);
+gulp.task('dist', [ 'html', 'css', 'javascript' ]);
 gulp.task('default', [ 'dist', 'spec' ]);
 
 gulp.task('fixme', _.partial(fixme, {
