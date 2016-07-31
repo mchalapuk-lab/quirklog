@@ -30108,9 +30108,15 @@ function observe($wnd) {
   }));
 
   observer.observeBrowserEvents($wnd, events);
+  observer.observeBrowserEvents($doc, events);
   observer.observePropertyChanges('window', $wnd, windowProperties, true);
   observer.observePropertyChanges('document', $doc, documentProperties.concat(offsetProperties), true);
   observer.observePropertyChanges('html', $html, offsetProperties, true);
+
+  $wnd.addEventListener('load', function() {
+    observer.observeBrowserEvents($doc.body, events);
+    observer.observePropertyChanges('body', $doc.body, offsetProperties, true);
+  });
 }
 
 observe(window);
