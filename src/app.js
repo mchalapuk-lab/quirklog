@@ -22,28 +22,20 @@ function observe($wnd) {
 
   var bus = new Bus();
   var observer = new Observer(bus, timestamp);
+  var serializer = new Serializer($wnd);
+
+  bus.subscribe(new Visitor(function(quirk) {
+    var serialized = serializer.serialize(quirk);
+    console.log(serialized);
+  }));
 
   observer.observeBrowserEvents($wnd, events);
-  observer.observePropertyChanges('window', $wnd, windowProperties);
-  observer.observePropertyChanges('document', $doc, documentProperties.concat(offsetProperties));
-  observer.observePropertyChanges('html', $html, offsetProperties);
-
-  return bus;
+  observer.observePropertyChanges('window', $wnd, windowProperties, true);
+  observer.observePropertyChanges('document', $doc, documentProperties.concat(offsetProperties), true);
+  observer.observePropertyChanges('html', $html, offsetProperties, true);
 }
 
-var serializer = new Serializer(window);
-var bus = observe(window);
-
-bus.subscribe(new Visitor({
-  'visitBrowserEvent': function(quirk) {
-    console.log(quirk.event.constructor.name);
-    console.log(quirk.event.type);
-  },
-}));
-bus.subscribe(new Visitor(function(quirk) {
-  var serialized = serializer.serialize(quirk);
-  console.log(serialized);
-}));
+observe(window);
 
 /*
   eslint-env node, browser

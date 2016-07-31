@@ -292,6 +292,28 @@ describe('observer', function() {
         });
       });
     });
+
+    describe('after called with emitInitialValues=true', function() {
+      var id = 'id';
+      var object = propertyChanges.reduce(function(obj, key) { obj[key] = true; return obj; }, {});
+
+      it('results in 4 quirks on a bus', function(done) {
+        var i = 0;
+        spyOn(bus, 'emit').and.callFake(function(quirk) {
+          var properties = captureQuirkProperties(quirk);
+          expect(properties.timestamp).toEqual([ 3, 141592 ]);
+          expect(properties.id).toBe(id);
+          expect(properties.instance).toBe(object);
+          expect(properties.propertyName).toBe(propertyChanges[i++]);
+          expect(properties.oldValue).toBe(undefined);
+          expect(properties.newValue).toBe(true);
+          done();
+        });
+
+        testedObserver.observePropertyChanges(id, object, propertyChanges, true);
+        expect(bus.emit.calls.count()).toBe(propertyChanges.length);
+      });
+    });
   });
 });
 

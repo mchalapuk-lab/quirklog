@@ -35,9 +35,10 @@ function observeBrowserEvents(priv, targets, eventTypes) {
   });
 }
 
-function observePropertyChanges(priv, id, object, propertyNames) {
+function observePropertyChanges(priv, id, object, propertyNames, emitInitial) {
   check(id, 'id').is.aString();
   check(object, 'object').is.not.Empty();
+  var emitInitValues = check(emitInitial, 'emitInitial').is.either.Undefined.or.aBoolean() || false;
 
   var propertyArray = ensureArray(check(propertyNames, 'propertyNames').is.not.Empty());
   check(propertyArray, 'propertyNames').has.not.length(0).and.contains.onlyStrings();
@@ -48,6 +49,14 @@ function observePropertyChanges(priv, id, object, propertyNames) {
         emitPropertyChange(priv, { id: id, instance: object }, change);
       }
     });
+  });
+
+  if (!emitInitValues) {
+    return;
+  }
+
+  propertyNames.forEach(function(key) {
+    emitPropertyChange(priv, { id: id, instance: object }, { type: 'add', name: key });
   });
 }
 
