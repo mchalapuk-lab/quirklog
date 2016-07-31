@@ -175,7 +175,7 @@ describe('observer', function() {
 
     var errors = [
       [ 'undefined id', undefined, {}, [ 'test' ], 'id must be a string; got undefined' ],
-      [ 'undefined object', 'id', undefined, [ 'test' ], 'object must be not empty; got undefined' ],
+      [ 'undefined instance', 'id', undefined, [ 'test' ], 'instance must be not empty; got undefined' ],
       [ 'undefined property names', 'id', {}, undefined, 'propertyNames must be not empty; got undefined' ],
       [ 'empty property names array', 'id', {}, [], 'propertyNames.length must be not 0; got 0' ],
       [ 'property name that is not a string', 'id', {}, [ 0 ], 'propertyNames[0] must be a string; got 0' ],
@@ -221,7 +221,7 @@ describe('observer', function() {
       });
 
       propertyChanges.forEach(function(propertyName) {
-        it('setting property "'+ propertyName +'" to true results in quirk on a bus', function(done) {
+        it('setting property "'+ propertyName +'" to true results in quirk on a bus', function() {
           spyOn(bus, 'emit').and.callFake(function(quirk) {
             var properties = captureQuirkProperties(quirk);
             expect(properties.timestamp).toEqual([ 3, 141592 ]);
@@ -230,10 +230,12 @@ describe('observer', function() {
             expect(properties.propertyName).toBe(propertyName);
             expect(properties.oldValue).toBe(undefined);
             expect(properties.newValue).toBe(true);
-            done();
           });
 
           object[propertyName] = true;
+          testedObserver.tick();
+
+          expect(bus.emit).toHaveBeenCalled();
         });
       });
     });
@@ -248,7 +250,7 @@ describe('observer', function() {
       });
 
       propertyChanges.forEach(function(propertyName) {
-        it('setting property "'+ propertyName +'" to false results in quirk on a bus', function(done) {
+        it('setting property "'+ propertyName +'" to false results in quirk on a bus', function() {
           spyOn(bus, 'emit').and.callFake(function(quirk) {
             var properties = captureQuirkProperties(quirk);
             expect(properties.timestamp).toEqual([ 3, 141592 ]);
@@ -257,15 +259,17 @@ describe('observer', function() {
             expect(properties.propertyName).toBe(propertyName);
             expect(properties.oldValue).toBe(true);
             expect(properties.newValue).toBe(false);
-            done();
           });
 
           object[propertyName] = false;
+          testedObserver.tick();
+
+          expect(bus.emit).toHaveBeenCalled();
         });
       });
 
       propertyChanges.forEach(function(propertyName) {
-        it('deleting property "'+ propertyName +'" results in quirk on a bus', function(done) {
+        it('deleting property "'+ propertyName +'" results in quirk on a bus', function() {
           spyOn(bus, 'emit').and.callFake(function(quirk) {
             var properties = captureQuirkProperties(quirk);
             expect(properties.timestamp).toEqual([ 3, 141592 ]);
@@ -274,21 +278,24 @@ describe('observer', function() {
             expect(properties.propertyName).toBe(propertyName);
             expect(properties.oldValue).toBe(true);
             expect(properties.newValue).toBe(undefined);
-            done();
           });
 
           delete object[propertyName];
+          testedObserver.tick();
+
+          expect(bus.emit).toHaveBeenCalled();
         });
       });
 
       propertyChanges.forEach(function(propertyName) {
         it('setting property "'+ propertyName +
             '" to the same value results in no quirk on a bus', function() {
-          spyOn(bus, 'emit').and.callFake(function() {
-            throw new Error('unexpected quirk');
-          });
+          spyOn(bus, 'emit');
 
           object[propertyName] = object[propertyName];
+          testedObserver.tick();
+
+          expect(bus.emit).not.toHaveBeenCalled();
         });
       });
     });
@@ -297,7 +304,7 @@ describe('observer', function() {
       var id = 'id';
       var object = propertyChanges.reduce(function(obj, key) { obj[key] = true; return obj; }, {});
 
-      it('results in 4 quirks on a bus', function(done) {
+      it('results in 4 quirks on a bus', function() {
         var i = 0;
         spyOn(bus, 'emit').and.callFake(function(quirk) {
           var properties = captureQuirkProperties(quirk);
@@ -307,10 +314,11 @@ describe('observer', function() {
           expect(properties.propertyName).toBe(propertyChanges[i++]);
           expect(properties.oldValue).toBe(undefined);
           expect(properties.newValue).toBe(true);
-          done();
         });
 
         testedObserver.observePropertyChanges(id, object, propertyChanges, true);
+        testedObserver.tick();
+
         expect(bus.emit.calls.count()).toBe(propertyChanges.length);
       });
     });

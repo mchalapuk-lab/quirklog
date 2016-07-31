@@ -39,6 +39,8 @@ function observe($wnd) {
     observer.observeBrowserEvents($doc.body, events);
     observer.observePropertyChanges('body', $doc.body, offsetProperties, true);
   });
+
+  $wnd.setInterval(observer.tick, 10);
 }
 
 observe(window);

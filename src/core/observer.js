@@ -1,7 +1,5 @@
 'use strict';
 
-require('../../node_modules/object-observe/dist/object-observe');
-
 var check = require('./check');
 var quirk = require('./quirk');
 
@@ -13,11 +11,13 @@ function Observer(bus, timestamp) {
   check(bus.emit, 'bus.emit').is.aFunction();
   priv.timestamp = check(timestamp, 'timestamp').is.aFunction();
   priv.emitBrowserEvent = emitBrowserEvent.bind(priv, priv);
+  priv.observedFields = [];
 
   var pub = {};
   pub.constructor = Observer;
   pub.observeBrowserEvents = observeBrowserEvents.bind(pub, priv);
   pub.observePropertyChanges = observePropertyChanges.bind(pub, priv);
+  pub.tick = tick.bind(pub, priv);
   return pub;
 }
 
@@ -35,19 +35,21 @@ function observeBrowserEvents(priv, targets, eventTypes) {
   });
 }
 
-function observePropertyChanges(priv, id, object, propertyNames, emitInitial) {
+function observePropertyChanges(priv, id, instance, propertyNames, emitInitial) {
   check(id, 'id').is.aString();
-  check(object, 'object').is.not.Empty();
+  check(instance, 'instance').is.not.Empty();
   var emitInitValues = check(emitInitial, 'emitInitial').is.either.Undefined.or.aBoolean() || false;
 
   var propertyArray = ensureArray(check(propertyNames, 'propertyNames').is.not.Empty());
   check(propertyArray, 'propertyNames').has.not.length(0).and.contains.onlyStrings();
 
-  Object.observe(object, function(changes) {
-    changes.forEach(function(change) {
-      if (propertyNames.indexOf(change.name) !== -1 && change.type.match(/add|update|delete/)) {
-        emitPropertyChange(priv, { id: id, instance: object }, change);
-      }
+  var startIndex = priv.observedFields.length;
+
+  propertyArray.forEach(function(propertyName) {
+    priv.observedFields.push({
+      oldValue: instance[propertyName],
+      get: get(propertyName),
+      emit: emit(propertyName),
     });
   });
 
@@ -55,8 +57,29 @@ function observePropertyChanges(priv, id, object, propertyNames, emitInitial) {
     return;
   }
 
-  propertyNames.forEach(function(key) {
-    emitPropertyChange(priv, { id: id, instance: object }, { type: 'add', name: key });
+  priv.observedFields.slice(startIndex).forEach(function(observed) {
+    observed.emit();
+  });
+
+  function get(key) {
+    return function() { return instance[key]; };
+  }
+
+  function emit(key) {
+    var initProto = { id: id, instance: instance, propertyName: key };
+    return emitPropertyChange.bind(priv, priv, initProto);
+  }
+}
+
+function tick(priv) {
+  priv.observedFields.forEach(function(observed) {
+    var newValue = observed.get();
+    var oldValue = observed.oldValue;
+    if (newValue === oldValue) {
+      return;
+    }
+    observed.oldValue = newValue;
+    observed.emit(oldValue);
   });
 }
 
@@ -67,11 +90,10 @@ function emitBrowserEvent(priv, event) {
   }));
 }
 
-function emitPropertyChange(priv, initProto, change) {
+function emitPropertyChange(priv, initProto, oldValue) {
   var init = Object.create(initProto);
-  init.propertyName = change.name;
-  init.newValue = initProto.instance[change.name];
-  init.oldValue = change.oldValue;
+  init.newValue = init.instance[init.propertyName];
+  init.oldValue = oldValue;
   init.timestamp = priv.timestamp();
   priv.bus.emit(new quirk.PropertyChange(init));
 }
