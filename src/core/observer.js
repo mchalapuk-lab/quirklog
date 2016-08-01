@@ -84,6 +84,7 @@ function tick(priv) {
 }
 
 function emitBrowserEvent(priv, event) {
+  tick(priv);
   priv.bus.emit(new quirk.BrowserEvent({
     timestamp: priv.timestamp(),
     event: event,
