@@ -15,6 +15,7 @@ var events = focusEvents.concat(loadEvents, viewEvents);
 var offsetProperties = require('./properties/offset');
 var documentProperties = require('./properties/document');
 var windowProperties = require('./properties/window');
+var renderProperties = require('./properties/render');
 
 function observe($wnd) {
   var $doc = $wnd.document;
@@ -30,8 +31,7 @@ function observe($wnd) {
   }));
 
   observer.observeBrowserEvents($wnd, events);
-  observer.observeBrowserEvents($doc, events);
-  observer.observePropertyChanges('window', $wnd, windowProperties, true);
+  observer.observePropertyChanges('window', $wnd, windowProperties.concat(renderProperties), true);
   observer.observePropertyChanges('document', $doc, documentProperties, true);
   observer.observePropertyChanges('html', $html, offsetProperties, true);
 

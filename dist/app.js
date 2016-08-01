@@ -22918,6 +22918,7 @@ var events = focusEvents.concat(loadEvents, viewEvents);
 var offsetProperties = require('./properties/offset');
 var documentProperties = require('./properties/document');
 var windowProperties = require('./properties/window');
+var renderProperties = require('./properties/render');
 
 function observe($wnd) {
   var $doc = $wnd.document;
@@ -22933,8 +22934,7 @@ function observe($wnd) {
   }));
 
   observer.observeBrowserEvents($wnd, events);
-  observer.observeBrowserEvents($doc, events);
-  observer.observePropertyChanges('window', $wnd, windowProperties, true);
+  observer.observePropertyChanges('window', $wnd, windowProperties.concat(renderProperties), true);
   observer.observePropertyChanges('document', $doc, documentProperties, true);
   observer.observePropertyChanges('html', $html, offsetProperties, true);
 
@@ -22953,7 +22953,7 @@ observe(window);
  */
 
 
-},{"./core/bus":100,"./core/observer":102,"./core/serializer":104,"./core/timestamp":105,"./core/visitor":106,"./events/focus":107,"./events/load":108,"./events/view":109,"./properties/document":110,"./properties/offset":111,"./properties/window":112}],100:[function(require,module,exports){
+},{"./core/bus":100,"./core/observer":102,"./core/serializer":104,"./core/timestamp":105,"./core/visitor":106,"./events/focus":107,"./events/load":108,"./events/view":109,"./properties/document":110,"./properties/offset":111,"./properties/render":112,"./properties/window":113}],100:[function(require,module,exports){
 'use strict';
 
 var check = require('./check');
@@ -23459,6 +23459,18 @@ module.exports = [
 
 
 },{}],112:[function(require,module,exports){
+'use strict';
+
+module.exports = [
+  'mozPaintCount',
+];
+
+/*
+  eslint-env node
+ */
+
+
+},{}],113:[function(require,module,exports){
 'use strict';
 
 module.exports = [
