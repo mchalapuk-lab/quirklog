@@ -10,8 +10,9 @@ var focusEvents = require('./events/focus');
 var loadEvents = require('./events/load');
 var viewEvents = require('./events/view');
 var transitionEvents = require('./events/transition');
+var renderEvents = require('./events/render');
 
-var events = focusEvents.concat(loadEvents, viewEvents, transitionEvents);
+var events = focusEvents.concat(loadEvents, viewEvents, transitionEvents, renderEvents);
 
 var offsetProperties = require('./properties/offset');
 var documentProperties = require('./properties/document');

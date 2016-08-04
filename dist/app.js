@@ -22754,8 +22754,9 @@ var focusEvents = require('./events/focus');
 var loadEvents = require('./events/load');
 var viewEvents = require('./events/view');
 var transitionEvents = require('./events/transition');
+var renderEvents = require('./events/render');
 
-var events = focusEvents.concat(loadEvents, viewEvents, transitionEvents);
+var events = focusEvents.concat(loadEvents, viewEvents, transitionEvents, renderEvents);
 
 var offsetProperties = require('./properties/offset');
 var documentProperties = require('./properties/document');
@@ -22800,7 +22801,7 @@ observe(window);
  */
 
 
-},{"./core/bus":50,"./core/observer":52,"./core/serializer":54,"./core/timestamp":55,"./core/visitor":56,"./events/focus":57,"./events/load":58,"./events/transition":59,"./events/view":60,"./properties/document":61,"./properties/offset":62,"./properties/render":63,"./properties/window":64}],50:[function(require,module,exports){
+},{"./core/bus":50,"./core/observer":52,"./core/serializer":54,"./core/timestamp":55,"./core/visitor":56,"./events/focus":57,"./events/load":58,"./events/render":59,"./events/transition":60,"./events/view":61,"./properties/document":62,"./properties/offset":63,"./properties/render":64,"./properties/window":65}],50:[function(require,module,exports){
 'use strict';
 
 var check = require('./check');
@@ -23266,7 +23267,8 @@ module.exports = [
 'use strict';
 
 module.exports = [
-  'transitionend',
+  'overflow', // mozilla-specific
+  'underflow', // mozilla-specific
 ];
 
 /*
@@ -23275,6 +23277,18 @@ module.exports = [
 
 
 },{}],60:[function(require,module,exports){
+'use strict';
+
+module.exports = [
+  'transitionend',
+];
+
+/*
+  eslint-env node
+ */
+
+
+},{}],61:[function(require,module,exports){
 'use strict';
 
 module.exports = [
@@ -23292,7 +23306,7 @@ module.exports = [
  */
 
 
-},{}],61:[function(require,module,exports){
+},{}],62:[function(require,module,exports){
 'use strict';
 
 module.exports = [
@@ -23311,7 +23325,7 @@ module.exports = [
  */
 
 
-},{}],62:[function(require,module,exports){
+},{}],63:[function(require,module,exports){
 'use strict';
 
 module.exports = [
@@ -23326,11 +23340,11 @@ module.exports = [
  */
 
 
-},{}],63:[function(require,module,exports){
+},{}],64:[function(require,module,exports){
 'use strict';
 
 module.exports = [
-  'mozPaintCount',
+  'mozPaintCount', // mozilla-specific
 ];
 
 /*
@@ -23338,7 +23352,7 @@ module.exports = [
  */
 
 
-},{}],64:[function(require,module,exports){
+},{}],65:[function(require,module,exports){
 'use strict';
 
 module.exports = [
