@@ -1,4 +1,11 @@
 body {
   height: 10px;
+  opacity: 0;
+  transition: ease-in-out 1ms opacity;
+}
+
+body.visible {
+  opacity: 1;
+  background: black;
 }
 

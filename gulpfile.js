@@ -64,6 +64,7 @@ gulp.task('fixme', _.partial(fixme, {
 
 gulp.task('watch', [ 'dist' ], function() {
   gulp.watch(config.files.html, [ 'html' ]);
+  gulp.watch(config.files.css, [ 'css' ]);
   gulp.watch(config.files.js, [ 'javascript', 'spec' ]);
   gulp.watch(config.files.spec, [ 'spec' ]);
 
