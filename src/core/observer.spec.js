@@ -205,8 +205,8 @@ describe('observer', function() {
       var arg1 = error[2];
       var arg2 = error[3];
 
-      it('should not throw when called with '+ testName, function() {
-        testedObserver.observePropertyChanges(arg0, arg1, arg2);
+      it('should return a function when called with '+ testName, function() {
+        expect(testedObserver.observePropertyChanges(arg0, arg1, arg2)).toEqual(jasmine.any(Function));
       });
     });
 
@@ -243,10 +243,11 @@ describe('observer', function() {
     describe('after called with full object and [ '+ propertyChanges +' ]', function() {
       var id = null;
       var object = null;
+      var remover = null;
 
       beforeEach(function() {
         object = propertyChanges.reduce(function(obj, key) { obj[key] = true; return obj; }, {});
-        testedObserver.observePropertyChanges(id = 'id', object, propertyChanges);
+        remover = testedObserver.observePropertyChanges(id = 'id', object, propertyChanges);
       });
 
       propertyChanges.forEach(function(propertyName) {
@@ -296,6 +297,24 @@ describe('observer', function() {
           testedObserver.tick();
 
           expect(bus.emit).not.toHaveBeenCalled();
+        });
+      });
+
+      describe('and then remover function called', function() {
+        beforeEach(function() {
+          remover();
+        });
+
+        propertyChanges.forEach(function(propertyName) {
+          it('setting property "'+ propertyName +
+              '" to different value results in no quirk on a bus', function() {
+            spyOn(bus, 'emit');
+
+            object[propertyName] = !object[propertyName];
+            testedObserver.tick();
+
+            expect(bus.emit).not.toHaveBeenCalled();
+          });
         });
       });
     });

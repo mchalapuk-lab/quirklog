@@ -22974,32 +22974,39 @@ function observePropertyChanges(priv, id, instance, propertyNames, emitInitial) 
   var propertyArray = ensureArray(check(propertyNames, 'propertyNames').is.not.Empty());
   check(propertyArray, 'propertyNames').has.not.length(0).and.contains.onlyStrings();
 
-  var startIndex = priv.observedFields.length;
+  function get(key) {
+    return function() { return instance[key]; };
+  }
+  function emit(key) {
+    var initProto = { id: id, instance: instance, propertyName: key };
+    return emitPropertyChange.bind(priv, priv, initProto);
+  }
+
+  var observedFields = [];
 
   propertyArray.forEach(function(propertyName) {
-    priv.observedFields.push({
+    observedFields.push({
       oldValue: instance[propertyName],
       get: get(propertyName),
       emit: emit(propertyName),
     });
   });
 
+  priv.observedFields = priv.observedFields.concat(observedFields);
+
+  var remover = function() {
+    var startIndex = priv.observedFields.indexOf(observedFields[0]);
+    priv.observedFields.splice(startIndex, observedFields.length);
+  };
+
   if (!emitInitValues) {
-    return;
+    return remover;
   }
 
-  priv.observedFields.slice(startIndex).forEach(function(observed) {
+  observedFields.forEach(function(observed) {
     observed.emit();
   });
-
-  function get(key) {
-    return function() { return instance[key]; };
-  }
-
-  function emit(key) {
-    var initProto = { id: id, instance: instance, propertyName: key };
-    return emitPropertyChange.bind(priv, priv, initProto);
-  }
+  return remover;
 }
 
 function tick(priv) {
