@@ -9,8 +9,9 @@ var Serializer = require('./core/serializer');
 var focusEvents = require('./events/focus');
 var loadEvents = require('./events/load');
 var viewEvents = require('./events/view');
+var transitionEvents = require('./events/transition');
 
-var events = focusEvents.concat(loadEvents, viewEvents);
+var events = focusEvents.concat(loadEvents, viewEvents, transitionEvents);
 
 var offsetProperties = require('./properties/offset');
 var documentProperties = require('./properties/document');
@@ -36,6 +37,7 @@ function observe($wnd) {
   observer.observePropertyChanges('html', $html, offsetProperties, true);
 
   $wnd.addEventListener('load', function() {
+    $doc.body.className = 'visible';
     observer.observeBrowserEvents($doc.body, events);
     observer.observePropertyChanges('body', $doc.body, offsetProperties, true);
   });
