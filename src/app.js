@@ -32,7 +32,7 @@ function observe($wnd) {
   }));
 
   observer.observeBrowserEvents($wnd, events);
-  observer.observePropertyChanges('window', $wnd, windowProperties.concat(renderProperties), true);
+  observer.observePropertyChanges('window', $wnd, windowProperties, true);
   observer.observePropertyChanges('document', $doc, documentProperties, true);
   observer.observePropertyChanges('html', $html, offsetProperties, true);
 
@@ -43,6 +43,10 @@ function observe($wnd) {
   });
 
   $wnd.setInterval(observer.tick, 10);
+
+  // observe rendering-related properties only for a second
+  var remover = observer.observePropertyChanges('window', $wnd, renderProperties, true);
+  $wnd.setTimeout(remover, 1000);
 }
 
 observe(window);
