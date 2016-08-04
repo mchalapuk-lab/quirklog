@@ -23253,6 +23253,7 @@ module.exports = [
   'readystatechange',
   'load',
   'pageshow',
+  'hashchange',
   'unload',
 ];
 
